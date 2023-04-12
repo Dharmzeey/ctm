@@ -1,0 +1,33 @@
+{% if store %}
+<footer class="mt-4 py-3 bg-gray-200">
+  <section class="">
+    <div class="flex gap-3 justify-between p-3">
+      <div>{{ store }} </div>
+      <div>{{ store.store_address }}</div>
+    </div>
+    <div class="flex justify-center gap-3 p-2">
+      <a href="tel:{{ store.whatsapp_number }}"><i class="fa-brands fa-whatsapp"></i></a>
+      {% if store.instagram %}
+      <a href="{{ store.instagram }}"><i class="fa-brands fa-instagram"></i></a>
+      {% endif %}
+      {% if store.tiktok %}
+      <a href="{{ store.tiktok }}"><i class="fa-brands fa-tiktok"></i></a>
+      {% endif %}
+      {% if store.twitter %}
+      <a href="{{ store.twitter }}"><i class="fa-brands fa-twitter"></i></a>
+      {% endif %}
+      {% if store.website %}
+      <a href="{{ store.website }}"><i class="fa-solid fa-globe"></i></a>
+      {% endif %}
+    </div>
+    </div>
+  </section>
+  <hr class="bg-black">
+  <section>
+    <div>
+      <small class="block text-center p-1">Campus Trade Mart &copy; 2023</small>
+    </div>
+  </section>
+</footer>
+{% endif %}
+<!-- {% include 'base/footer.html' %} -->

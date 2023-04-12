@@ -1,0 +1,52 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+    integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ==" crossorigin="anonymous"
+    referrerpolicy="no-referrer" />
+  <link rel="shortcut icon" href="{% static 'images/icon.ico' %}" type="image/x-icon">
+  {% tailwind_css %}
+  {% block title %}
+  <title>Campus Trade Mart</title>
+  {% endblock %}
+
+  {% block style %}
+  {% endblock %}
+
+</head>
+
+<body>
+  {% if messages %}
+  <!-- THIS IS FOR FLASH MESSAGE -->
+  <ul class="fixed bg-black text-white w-full p-3 text-center" id="pop-up">
+    {% for message in messages %}
+    <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% include 'base/navbar.html' %}
+
+  <div class="px-4 min-h-screen md:w-5/6 md:m-auto">
+    {% block content %}
+    {% endblock %}
+  </div>
+  
+  <!-- FOOTER -->
+  {% if store or more_items %}
+  {% include 'base/store-footer.html' %}
+  {% else %}
+  {% include 'base/footer.html' %}
+  {% endif %}
+
+</body>
+<script src="{% static 'js/script.js' %}"></script>
+{% block script %}
+{% endblock %}
+
+</html>

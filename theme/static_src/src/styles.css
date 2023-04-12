@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* * {
+  @apply bg-gray-100 !important;
+} */
+
+body {
+  @apply bg-slate-100;
+}
+
+.img-wrapper{
+  @apply w-full h-[30vw] lg:h-[20vw];
+}
+
+img {
+  @apply w-full h-full object-cover;
+}
+
+.grid-items {
+  @apply grid grid-cols-2 gap-3 lg:grid-cols-3;
+}
+
+.menu-toggle-icon.activated .open-menu-icon, .close-menu-icon{
+  @apply hidden ;
+}
+
+.menu-toggle-icon.activated .close-menu-icon{
+  @apply block;
+}
+
+select {
+  @apply py-0;
+}
+
+input :not(input[type="checkbox"]){
+  @apply py-1 bg-inherit !important;
+}
+
+select, textarea {
+  @apply bg-inherit;
+}
+
+button[type="reset"], button[type="submit"], input[type="submit"] {
+  @apply inline-block py-1 px-2 text-base text-black border bg-gray-100 border-black rounded mt-4;
+}
+
+.form-container > p {
+  @apply leading-10 flex flex-col;
+}
+
+.form-container select {
+  @apply p-2;
+}
+
+.form-container {
+  @apply md:w-1/2 md:m-auto;
+}
+
+.link, form a {
+  @apply text-blue-600 font-semibold;
+}

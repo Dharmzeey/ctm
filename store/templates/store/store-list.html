@@ -1,0 +1,16 @@
+{% if stores %}
+<h1>Stores in {{ place }}</h1>
+{% for store in stores %}
+<div>
+  <a href="{% url 'store:detail_store' store_name=store.store_name %}">
+    <div>
+      <img src="{{ store.store_logo.url }}" alt="{{ store.store_name }}" width="200">
+    </div>
+    <h3>{{ store.store_name }}</h3>
+    <div>{{ store.store_motto }}</div>
+  </a>
+</div>
+{% endfor %}
+{% else %}
+<h1>There are currently no Stores Here</h1>
+{% endif %}

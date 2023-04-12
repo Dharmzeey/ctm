@@ -1,0 +1,28 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+<title>Edit Product | Campus Trade Mart</title>
+{% endblock %}
+
+{% block content %}
+<h1 class="font-bold text-2xl">Edit Product</h1>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  {% if product_images.forms %}  
+  <h1 class="font-bold text-2xl my-3">Images</h1>
+  {% endif %}
+  {{ product_images.management_form }}
+
+  {% for form in product_images.forms %}
+  <div class="p-2 pb-4 border-b-2 border-black">
+    <b>{{ forloop.counter }}. </b>{{ form.as_table }}
+  </div>
+  {% endfor %}
+
+  <input type="submit" name="submit" id="submit">
+</form>
+
+{% endblock %}

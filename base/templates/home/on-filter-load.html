@@ -1,0 +1,54 @@
+{% if product or recent %}
+{% if products %}
+<section id="products">
+  <h1 class="font-bold py-4 text-2xl">Products</h1>
+  <div class="flex flex-wrap gap-4">
+    {% for good in products %}
+    <div>
+      <a class="flex flex-col justify-between" href="{% url 'store:detail_product' store_name=good.store.store_name product_uuid=good.uuid  %}">
+        <div class="w-40">
+          <img src="{{ good.thumbnail.url }}" alt="{{ good.title }}">
+        </div>
+        <div>
+          <div>{{ good.title }}</div>
+          <div>
+            <small>&#8358; {{ good.price }}</small>
+          </div>
+        </div>
+      </a>
+      <small>
+        <a class="link" href="{% url 'store:detail_store' store_name=good.store.store_name %}">{{ good.store.store_name }}</a>
+      </small>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if recent %}
+<section id="recent">
+  <h1 class="font-bold py-4 text-2xl">Recent</h1>
+  <div class="flex flex-wrap gap-4">
+    {% for good in recent %}
+    <div>
+      <a href="{% url 'store:detail_product' store_name=good.store.store_name product_uuid=good.uuid  %}">
+        <div class="w-40">
+          <img src="{{ good.thumbnail.url }}" alt="{{ good.title }}" width="200">
+        </div>
+        <div>{{ good.title }}</div>
+        <div>
+          <small>&#8358; {{ good.price }}</small>
+        </div>
+      </a>
+      <small>
+        <a href="{% url 'store:detail_store' store_name=good.store.store_name %}">{{ good.store.store_name }}</a>
+      </small>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% else %}
+<h1>No Items to show here, please check another location😊</h1>
+{% endif %}

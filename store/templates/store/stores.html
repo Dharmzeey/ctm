@@ -1,0 +1,113 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+<title>Stores | Campus Trade Mart</title>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center font-bold text-2xl">Stores</h1>
+<form action="" id="data-form" data-url="{% url 'store:load_data' %}" data-store-url="{% url 'store:load_stores' %}">
+  <div class="flex flex-col gap-3 mb-3">
+    {{ form.as_p }}
+  </div>
+</form>
+<div>
+  <form action="{% url 'store:search_store' %}">
+    <input type="text" name="q" placeholder="Search store">
+  </form>
+
+  <div id="store-list" class="flex gap-1 flex-wrap m-auto pt-4 w-11/12">
+    {% for store in stores %}
+    <div>
+      <a href="{% url 'store:detail_store' store_name=store.store_name %}" class="flex flex-col justify-between">
+        <div class="w-32 h-32">
+          <img src="{{ store.store_logo.url }}" alt="{{ store.store_name }}">
+        </div>
+        <div>
+          <h3 class="text-center">{{ store.store_name }}</h3>
+          <small class="text-sm">{{ store.store_motto|truncatechars:20 }}</small>
+        </div>
+      </a>
+    </div>
+    {% empty %}
+    <h3>No Stores Available</h3>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+
+  $('#id_state').change(function () {
+    let url = $("#data-form").attr("data-url");
+    let state = $(this).val();
+    $.ajax({
+      url: url,
+      data: {
+        'state': state
+      },
+      success: function (data) {
+        $("#id_location").html(data);
+        $("#id_institution").html('<option value="">---------</option>');
+
+        // THIS CODE BELOW IS TRIGGERED AFTER THE AJAX FINISH LOADING THE LOCATION, IT WILL DISPLAY ALL THE STORES OF THE SELECTED STATE IN THE HTML PAGE ASYNC
+        let storeUrl = $("#data-form").attr("data-store-url");
+        $.ajax({
+          url: storeUrl,
+          data: {
+            'state': state
+          },
+          success: function (data) {
+            $("#store-list").html(data);
+          }
+        })
+      }
+    })
+  })
+
+  $("#id_location").change(function () {
+    let url = $("#data-form").attr("data-url");
+    let location = $(this).val();
+    $.ajax({
+      url: url,
+      data: {
+        'location': location
+      }, success: function (data) {
+        $("#id_institution").html(data)
+
+        // THIS CODE BELOW IS TRIGGERED AFTER THE AJAX FINISH LOADING THE INSTITUTION, IT WILL DISPLAY ALL THE STORES OF THE SELECTED LOCATION IN THE HTML PAGE ASYNC
+        let storeUrl = $("#data-form").attr("data-store-url");
+        $.ajax({
+          url: storeUrl,
+          data: {
+            'location': location
+          },
+          success: function (data) {
+            $("#store-list").html(data);
+          }
+        })
+      }
+    })
+  })
+
+  // THIS CODE BELOW IS TRIGGERED AFTER THE STITUTION IS CLICKED, IT WILL DISPLAY ALL THE STORES OF THE SELECTED INSTITUTIONS IN THE HTML PAGE ASYNC
+  $("#id_institution").change(function () {
+    let storeUrl = $("#data-form").attr("data-store-url");
+    let institution = $(this).val();
+    $.ajax({
+      url: storeUrl,
+      data: {
+        'institution': institution
+      },
+      success: function (data) {
+        $("#store-list").html(data);
+      }
+    })
+  })
+
+</script>
+
+{% endblock %}

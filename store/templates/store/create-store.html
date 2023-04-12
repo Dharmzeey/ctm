@@ -1,0 +1,54 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+<title>Create Store | Campus Trade Mart</title>
+{% endblock %}
+
+{% block content %}
+<div>
+  <h1 class="text-center text-2xl">Store Profile</h1>
+  <form action="" enctype="multipart/form-data" method="POST" id="data-form" data-url="{% url 'store:load_data' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" name="submit" id="submit">
+  </form>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+
+  $('#id_store_state').change(function () {
+    let url = $("#data-form").attr("data-url");
+    let state = $(this).val();
+    $.ajax({
+      url: url,
+      data: {
+        'state': state
+      },
+      success: function (data) {
+        $("#id_store_location").html(data);
+        $("#id_store_institution").html('<option value="">---------</option>');
+      }
+    })
+  })
+
+  $("#id_store_location").change(function () {
+    let url = $("#data-form").attr("data-url");
+    let location = $(this).val();
+    $.ajax({
+      url: url,
+      data: {
+        'location': location
+      }, success: function (data) {
+        $("#id_store_institution").html(data)
+      }
+    })
+  })
+
+
+</script>
+
+{% endblock %}

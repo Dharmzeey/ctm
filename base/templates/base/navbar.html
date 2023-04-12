@@ -1,0 +1,49 @@
+{% load static %}
+<nav class="text-2xl">
+  <div class="p-2 flex justify-between">
+    <div>
+      <a href="{% url 'home' %}">
+        <div class="w-14">
+          <img src="{% static 'images/logo-no-bg.png' %}" alt="CTM logo">
+        </div>
+      </a>
+    </div>
+
+    <div>
+      <button class="relative menu-toggle-icon z-10" id="menu-toggle-icon">
+        <i class="fa-solid fa-bars open-menu-icon toggle" id="open-menu"></i>
+        <i class="fa-solid fa-xmark close-menu-icon toggle" id="close-menu"></i>
+      </button>
+    </div>
+  </div>
+
+  <div id="aside" class="aside bg-gray-100 fixed h-full hidden leading-10 p-10 w-full z-50">
+    <div>
+      <a href="{% url 'store:list_stores' %}">Store</a>
+    </div>
+
+    {% if request.user.is_authenticated %}
+    <div>
+      <a href="{% url 'profile_view' %}">Profile</a>
+    </div>
+    {% if not request.user.is_vendor %}
+    <div>
+      <a href="{% url 'vendor_request' %}">Become a Vendor</a>
+    </div>
+    {% endif %}
+    {% if request.user.is_vendor %}
+    <div>
+      <a href="{% url 'vendor' %}">Vendor's Profile</a>
+    </div>
+    {% endif %}
+    <a href="{% url 'account_logout' %}">Sign Out </a>
+
+
+    {% else %}
+    <div class="flex flex-col">
+      <a href="{% url 'account_login' %}">Sign In</a>
+      <a href="{% url 'account_signup' %}">Register</a>
+    </div>
+    {% endif%}
+  </div>
+</nav>

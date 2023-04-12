@@ -1,0 +1,94 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+<title>{{ store.store_name }} | Campus Trade Mart</title>
+{% endblock %}
+
+
+{% block content %}
+
+<div>
+  {% if inactive and owner %}
+  <h1>Your Store is currently Inactive</h1>
+  <h2>Do You want to activate you subscription
+    <a href="{% url 'activate_subscription' %}">Activate Subscription</a>
+  </h2>
+  {% elif inactive and store_name %}
+  <h1>{{ store_name }}'s Store is currently Inactive</h1>
+  {% else %}
+
+  <div style="background-image: url('{{ store.store_bg_img.url }}');" class="bg-cover bg-no-repeat flex mb-32 h-52 relative">
+    <div class="absolute w-full flex top-24 z-10">
+      <div class="w-full">
+        <div class="w-40 h-40"><img id="store-logo" class="rounded-full " src="{{ store.store_logo.url }}" alt="{{ store.store_name }}"></div>
+        <div class="w-11/12 grid grid-cols-2 gap-2">
+          <div>
+            <div>{{ store.store_name }}'s Shop</div>
+            <div>Location: {{ store.store_address }}</div>
+          </div>
+          <div class="justify-self-end">
+            <div>{{ store.whatsapp_number }}</div>
+
+            {% if store.instagram %}
+            <a href="{{ store.instagram }}"><i class="fa-brands fa-instagram"></i></a>
+            {% endif %}
+            {% if store.tiktok %}
+            <a href="{{ store.tiktok }}"><i class="fa-brands fa-tiktok"></i></a>
+            {% endif %}
+            {% if store.twitter %}
+            <a href="{{ store.twitter }}"><i class="fa-brands fa-twitter"></i></a>
+            {% endif %}
+            {% if store.website %}
+            <a href="{{ store.website }}"><i class="fa-solid fa-globe"></i></a>
+            {% endif %}
+          </div>
+          <div class="col-span-2 text-center font-semibold">{{ store.store_motto }}</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- THE OWNER I USED BELOW IS PASSED FROM VIEWS.PY -->
+  {% if not request.user.is_anonymous and request.user.is_vendor and owner %}
+  <br>
+  <div>
+    <div><a class="link" href="{% url 'store:edit_store' %}">Edit Store</a></div>
+    <div><a class="link" href="{% url 'store:add_product' store_name=owner %}">Add product</a></div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- THIS IS WHERE THE CODE THAT RENDERS THE PRODUCT STARTS -->
+<h2 class="text-center font-bold">{{ store.store_name }} Goods</h2>
+<div>
+  <section id="">
+    <h1 class="font-bold py-4 text-xl">Goods</h1>
+    <div class="grid-items">
+      {% for good in goods %}
+      <div class="w-full h-full bg-white rounded-t-lg">
+        <a class="flex flex-col justify-between" href="{% url 'store:detail_product' store_name=good.store.store_name product_uuid=good.uuid  %}">
+          <div class="img-wrapper">
+            <img class="rounded-t-lg" src="{{ good.thumbnail.url }}" alt="{{ good.title }}">
+          </div>
+          <div class="px-4">
+            <div class="pt-4">{{ good.title }}</div>
+            <div>
+              <small>&#8358; {{ good.price }}</small>
+            </div>
+          </div>
+        </a>
+        {% if owner %}
+        <div>
+          <a class="link" href="{% url 'store:edit_product' store_name=store.store_name product_uuid=good.uuid %}">Edit Item</a> |
+          <a class="link" href="{% url 'store:delete_product' store_name=store.store_name product_uuid=good.uuid %}">Delete Item</a>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+__pycache__
+*.sqlite3
+*.pyc
+develpoment.py
+media
+ngrok.exe
+migrations/
