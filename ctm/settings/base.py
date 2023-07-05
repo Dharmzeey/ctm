@@ -14,17 +14,27 @@ INSTALLED_APPS = [
     "base.apps.BaseConfig",
     "user.apps.UserConfig",
     "store.apps.StoreConfig",
+    "api.apps.ApiConfig",
     
     'django_extensions',
     'django_cleanup.apps.CleanupConfig',
+    # ALLAUTH
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    # TAILWIND
     'tailwind',
     'theme',
     'django_browser_reload',
+    # CRISPY FORM
     'crispy_forms',
     'crispy_bootstrap4',
+    # DRF
+    'corsheaders',
+    'drf_spectacular',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    
 ]
 
 
@@ -32,6 +42,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -65,6 +76,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ctm.wsgi.application"
+
+#CORS
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -139,3 +153,6 @@ NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 # CHRISPY
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# DRF
+from .drf_settings import *
