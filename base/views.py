@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 
-from user.models import Location, Institution, State
+from user.models import Location, Institution, State, UserInfo
 from store.models import Product, Store
 from store.forms import FilterForm
 
@@ -19,23 +19,30 @@ BUT IT IS POSSIBLE FOR THERE TO BE LOCATION WITHOUT INSTITUTION,
 SO IF THE INSTIUTION IS EXECUTED THEN IT WILL SKIP LOCATION AND STATE
 '''
 def set_viewing_location(request):
-  if request.user.is_authenticated and (request.user.institution or request.user.location or request.user.state):
+  try:
+    if request.user.is_authenticated:
+      request.user.user_info
+  except UserInfo.DoesNotExist:
+      return None
+    # return redirect(reverse_lazy("profile_create"))
+  
+  if request.user.is_authenticated and (request.user.user_info.institution or request.user.user_info.location or request.user.user_info.state):
     viewing_institution = request.session.get("viewing_institution", None)
     viewing_location = request.session.get("viewing_location", None)
     viewing_state = request.session.get("viewing_state", None)
     # THE SESSION WILL GET ASSIGNED IF THEY DO NOT EXIST ELSE IT JUST PASS
-    if request.user.institution:
+    if request.user.user_info.institution:
       if not viewing_institution and not viewing_location and not viewing_state:
-        request.session["viewing_institution"] = str(request.user.institution)
-        request.session["viewing_location"] = str(request.user.location)
-        request.session["viewing_state"] = str(request.user.state)
-    elif request.user.location:
+        request.session["viewing_institution"] = str(request.user.user_info.institution)
+        request.session["viewing_location"] = str(request.user.user_info.location)
+        request.session["viewing_state"] = str(request.user.user_info.state)
+    elif request.user.user_info.location:
       if not viewing_location and not viewing_state:
-        request.session["viewing_location"] =  str(request.user.location)
-        request.session["viewing_state"] = str(request.user.state)
-    elif request.user.state:
+        request.session["viewing_location"] =  str(request.user.user_info.location)
+        request.session["viewing_state"] = str(request.user.user_info.state)
+    elif request.user.user_info.state:
       if not viewing_state:
-        request.session["viewing_state"] = str(request.user.state)
+        request.session["viewing_state"] = str(request.user.user_info.state)
   return 1
   
 def filter_store(request, model):

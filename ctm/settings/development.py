@@ -13,5 +13,12 @@ DATABASES = {
     'PASSWORD': "Azeezat1@",
     'HOST': "127.0.0.1",
     'PORT': '',
-      }
+  }
 }
+
+TAILWIND_MIDDLEWARE = [
+  # TAILWIND
+  "django_browser_reload.middleware.BrowserReloadMiddleware",
+]
+
+MIDDLEWARE += TAILWIND_MIDDLEWARE

@@ -17,6 +17,6 @@ if (document.getElementById("pop-up")) {
     popUp = document.getElementById("pop-up");
     setTimeout(() => {
       popUp.style.display = "none"
-    }, 2500)
+    }, 1700)
   }
 }

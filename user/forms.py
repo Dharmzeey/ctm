@@ -1,10 +1,10 @@
 from django import forms
-from .models import User, Institution, Location
+from .models import UserInfo, Institution, Location
 
 class ProfileForm(forms.ModelForm):
   class Meta:
-    model = User
-    fields = ["first_name", "last_name", "email", "state", "location", "institution", "address", "tel"]
+    model = UserInfo
+    fields = ["first_name", "last_name", "state", "location", "institution", "address", "tel"]
     widgets = {
       "email" : forms.TextInput(attrs={'readonly':'readonly'})
     }

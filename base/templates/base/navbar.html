@@ -26,12 +26,12 @@
     <div>
       <a href="{% url 'profile_view' %}">Profile</a>
     </div>
-    {% if not request.user.is_vendor %}
+    {% if not request.user.user_info.is_vendor %}
     <div>
       <a href="{% url 'vendor_request' %}">Become a Vendor</a>
     </div>
     {% endif %}
-    {% if request.user.is_vendor %}
+    {% if request.user.user_info.is_vendor %}
     <div>
       <a href="{% url 'vendor' %}">Vendor's Profile</a>
     </div>

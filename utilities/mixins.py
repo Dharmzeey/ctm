@@ -17,7 +17,7 @@ class SubscriptionCheckMixin:
       
       
     # THIS FIRST ONE WILL CHECK AND EXECUTE IF THE CURRENT USER IS THE OWNER OF THE STORE
-    if (request.user.is_authenticated and request.user.is_vendor) and (not request.user.selling_vendor.is_subscription_active) and (not request.user.selling_vendor.active_subscription):
+    if (request.user.is_authenticated and request.user.user_info.is_vendor) and (not request.user.selling_vendor.is_subscription_active) and (not request.user.selling_vendor.active_subscription):
       owner = Store.objects.get(owner__seller=request.user.id)
       context.update({"owner": owner, "inactive": True})
     

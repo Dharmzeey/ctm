@@ -1,41 +1,60 @@
-from datetime import timedelta, datetime, timezone
 import pytz
+from datetime import timedelta, datetime, timezone
+from django.forms.forms import BaseForm
+from django.http.response import HttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.views import View
 from django.views.generic.list import ListView
-from django.views.generic.edit import FormView, UpdateView
+from django.views.generic.edit import FormView, UpdateView, CreateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 
 from .forms import ProfileForm, ActivateSubscriptionForm
-from .models import User, Vendor, SubscriptionHistory
+from .models import User, UserInfo,Vendor, SubscriptionHistory
 from store.models import Product
+from utilities.vendor import create_vendor, has_vendor_profile, view_vendor, activate_vendor_subscription
 
-# class ProfileView(View):
-#   template_name = "user/profile.html"
-#   model = User
-#   def get(self, request):
-#     profile = get_object_or_404(self.model, id=request.user.id)
-#     form = ProfileForm(instance=profile)
-#     context = {"form": form}
-#     return render(request, self.template_name, context)
+
+class ProfileCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+  template_name = "user/profile.html"  
+  form_class = ProfileForm
+  model = UserInfo
+  success_url = reverse_lazy("profile_view")
+  context_object_name = "profile"
+  success_message = "Profile Created Successfully"
   
-#   def post(self, request):
-#     return 
-
+  def get(self, request):
+    try:
+      UserInfo.objects.get(user=request.user)
+      return redirect(reverse_lazy("profile_view"))
+    except:
+      return super().get(request)  
+  def form_valid(self, form):
+    form.instance.user = self.request.user
+    form.instance.email = self.request.user.email
+    form.save()
+    return super().form_valid(form)
+profile_create = ProfileCreate.as_view()
+  
 class ProfileView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
   template_name = "user/profile.html"
   form_class = ProfileForm
-  model = User
+  model = UserInfo
   success_url = reverse_lazy("profile_view")
   context_object_name = "profile"
   success_message = "Profile Updated Successfully"
   
+  def get(self, request):
+    try:
+      UserInfo.objects.get(user=request.user)
+    except UserInfo.DoesNotExist:
+      return redirect(reverse_lazy("profile_create"))
+    return super().get(request)
   def get_object(self):
-    profile = get_object_or_404(self.model, id=self.request.user.id)
+    profile = get_object_or_404(self.model, id=self.request.user.user_info.id)
     return profile
 profile_view = ProfileView.as_view()
 
@@ -55,7 +74,13 @@ recently_viewed = RecentlyViewed.as_view()
 class VendorRequest(LoginRequiredMixin, View):
   template_name = "user/vendor-request.html"
   def get(self, request):
-    if request.user.is_vendor:
+    try:
+      if request.user.is_authenticated:
+        request.user.user_info
+    except UserInfo.DoesNotExist:
+      messages.info(request, "Please create your profile first")
+      return redirect(reverse_lazy("profile_create"))
+    if has_vendor_profile(request):
       # IF THE PERSON IS ALREADY A VENDOR
       messages.info(request, "You are already a vendor")
       store_name = self.request.user.selling_vendor.store_owner.store_name
@@ -64,25 +89,7 @@ class VendorRequest(LoginRequiredMixin, View):
       return render(request, self.template_name)
     
   def post(self, request):
-    # ACTIVATES THE IS_VENDOR OF USER
-    user = User.objects.get(id=request.user.id)
-    user.is_vendor = True
-    user.save()
-    
-    # FREE TRIAL EXPIRES AFTER SEVEN DAYS
-    time_now = datetime.now()
-    timezone = pytz.timezone('Africa/Lagos')
-    naive_expiry_date = time_now + timedelta(days=7)    
-    expiry_date = timezone.localize(naive_expiry_date)
-    vendor = Vendor.objects.create(
-      seller = user,
-      active_subscription = True,
-      subscription_plan = 2000,
-      subscription_duration = 7,
-      subscription_expire = expiry_date,
-    )
-    vendor.save()
-    
+    create_vendor(request)
     messages.success(request, "7 days free trial activated 😊")   
     messages.info(request, "Please Create your store profile")   
     return HttpResponseRedirect(reverse_lazy("store:create_store"))
@@ -92,17 +99,8 @@ vendor_request = VendorRequest.as_view()
 class VendorView(LoginRequiredMixin, View):
   template_name = "user/vendor.html"
   def get(self, request):
-    if request.user.is_vendor:
-      vendor = Vendor.objects.get(seller=request.user)
-      expiry = vendor.subscription_expire
-      timezone = pytz.timezone('Africa/Lagos')
-      current_time = timezone.localize(datetime.now())
-      days_remaining = expiry - current_time
-      try:
-        latest_sub = SubscriptionHistory.objects.filter(vendor=vendor)[0]
-      except:
-        latest_sub = "Free Trial"
-      context = {"vendor": vendor, "latest_sub": latest_sub, "days_remaining": days_remaining.days}
+    if has_vendor_profile(request):
+      context = view_vendor(request)   
     return render(request, self.template_name, context)
 vendor_view = VendorView.as_view()
 
@@ -122,40 +120,14 @@ class ActivateSubscription(LoginRequiredMixin, FormView):
     if form.is_valid():
       package = form.cleaned_data["package"]
       duration = form.cleaned_data["duration"]
-      total = int(package) * int(duration)
-      
-      # THE PAYMENT LOGIC WILL BE HERE and ensure that there is no magomago
-      payment_successful = True
-      if payment_successful:
-        time_now = datetime.now()
-        native_expiry_date = time_now + timedelta(days=duration*30)
-        timezone = pytz.timezone('Africa/Lagos')
-        expiry_date = timezone.localize(native_expiry_date)
-        seller_id = self.request.user.id
-        
-        # THIS WILL GET THE VENDOR AND ACTIVATE THE STORE
-        vendor = Vendor.objects.get(seller=seller_id)
-        vendor.active_subscription = True
-        vendor.subscription_plan = int(package)
-        vendor.subscription_duration = int(duration * 30)
-        vendor.subscription_expire = expiry_date   
-        vendor.save()     
-
-        # THIS WILL UP SUBSCRIPTION HISTORY OF THE VENDOR
-        subs_history = SubscriptionHistory.objects.create(
-          vendor=vendor,
-          amount_paid=total,
-          subscription_plan=int(package),
-          duration=int(duration * 30), 
-          expire_on=expiry_date
-        )
-        subs_history.save()
+      if activate_vendor_subscription(self.request, package, duration):
         messages.success(self.request, f"Congratulations!!! Your {duration} months plan has successfully been activated")
         # IF FORM VALID AND PAYMENT SUCCESSFUL
         return super(ActivateSubscription, self).form_valid(form)
-      # IF PAYMENT NOT SUCCESSFUL BUT FORM VALID
-      messages.error(self.request, "Payment Failed!!!")
-      return render(self.request, self.template_name, {'form': form})
+      else:
+        # IF PAYMENT NOT SUCCESSFUL BUT FORM VALID
+        messages.error(self.request, "Payment Failed!!!")
+        return render(self.request, self.template_name, {'form': form})
     # IF FORM NOT VALID
     return render(self.request, self.template_name, {'form': form})
   
@@ -169,7 +141,7 @@ class SubscriptionHistoryView(LoginRequiredMixin, View):
   template_name = "user/subscription-history.html"
   model = SubscriptionHistory
   def get(self, request):
-    if request.user.is_vendor:
+    if has_vendor_profile(request):
       vendor = Vendor.objects.get(seller=request.user.id)
       history = self.model.objects.filter(vendor=vendor)
       context = {"histories": history}

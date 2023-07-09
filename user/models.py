@@ -27,24 +27,26 @@ class Institution(models.Model):
 
 
 class User(AbstractUser):
+  username = models.CharField(max_length=50, unique=True)
+  password = models.CharField(max_length=128)
+  created = models.DateTimeField(auto_now_add=True)
+  updated = models.DateTimeField(auto_now=True)
+
+
+class UserInfo(models.Model):
+  user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_info")
   first_name = models.CharField(max_length=150, null=False)
   last_name = models.CharField(max_length=150, null=False)
+  email = models.EmailField(unique=True)
   state = models.ForeignKey(State, on_delete=models.SET_NULL, related_name="user_state", null=True)
   location = models.ForeignKey(Location, on_delete=models.SET_NULL, related_name="user_location", null=True)
   institution = models.ForeignKey(Institution, on_delete=models.SET_NULL, related_name="user_institution", null=True, blank=True)
   address = models.CharField(max_length=255)
   tel = models.CharField(max_length=11, validators=[RegexValidator(r'^0\d{10}$', 'Mobile number should be 11 digits starting with 0.')])
   is_vendor = models.BooleanField(default=False)
-  email = models.EmailField(unique=True)
   def __str__(self):
-    return self.username
+    return self.user.username
   
-  
-class VendorApplication(models.Model):
-  applicant = models.OneToOneField(User, on_delete=models.SET_NULL, related_name="vendor_applicant", null=True)
-  def __str__(self):
-    return self.applicant
-
 
 class Vendor(models.Model):
   PACKAGES =(

@@ -66,7 +66,11 @@ def load_data(request):
 #     return context
 # load_stores = LoadStores.as_view()
 
-# THIS CLASS IS ACCESSED BY AJAX
+"""
+THIS CLASS IS ACCESSED BY AJAX
+WHEN IN THE STORE PAGE AND THE STATE / LOCATION / INSTITUTION IS BEING SELECTED, THE STORE GETS FILTERED AND RENDERED BASED ON WHERE SELECTED 
+ALSO STATE -> LOCATION -> INSTITUTION GETS FILTERED ALSO 
+"""
 class LoadStores(View):
   model = Store
   template_name = "store/store-list.html"
@@ -106,7 +110,7 @@ class SearchStore(ListView):
       )
     else:
       return super().get_queryset()
-search_store = SearchStore.as_view()  
+search_store = SearchStore.as_view()
 
 
 class CreateStore(LoginRequiredMixin, SubscriptionCheckMixin, CreateView):
@@ -154,42 +158,26 @@ class StoreDetails(SubscriptionCheckMixin, View):
   template_name = "store/store-details.html"
   def get(self, request, store_name):
     store = Store.objects.get(store_name__iexact=store_name)
-    goods = Product.objects.filter(store=store.id)
+    products = Product.objects.filter(store=store.id)
     # THIS IF BLOCK WILL EXECUTE IF THE PERSON CLICKNIG THE STORE IS ALSO THE OWNER
-    if not request.user.is_anonymous and request.user.is_vendor and store.owner.seller == request.user:
+    if not request.user.is_anonymous and request.user.user_info.is_vendor and store.owner.seller == request.user:
       owner = Store.objects.get(owner__seller=request.user.id, store_name__iexact=store_name)
-      context = {"owner": owner, "store": store, "goods":goods}
+      context = {"owner": owner, "store": store, "products":products}
     else:
-      context = {"store": store, "goods":goods}
+      context = {"store": store, "products":products}
     return render(request, self.template_name, context)
 detail_store = StoreDetails.as_view()
 
 
-# class AddProduct(LoginRequiredMixin, SubscriptionCheckMixin, CreateView):
-#   template_name = "store/add-product.html"
-#   form_class = ProductForm 
-  
-#   def form_valid(self, form):
-#     vendor = self.request.user.selling_vendor
-#     form.instance.vendor = vendor
-#     form.instance.store = vendor.store_owner
-#     messages.success(self.request, "Product Added Succssfully")
-#     return super().form_valid(form)
-  
-#   def get_success_url(self):
-#     store_name = self.request.user.selling_vendor.store_owner
-#     return reverse_lazy('store:detail_store', kwargs={'store_name': store_name})
-# add_product = AddProduct.as_view()
-
-
 class AddProduct(LoginRequiredMixin, SubscriptionCheckMixin, View):
   template_name = "store/add-product.html"
-  def get(self, request, store_name):
+  def get(self, request):
     form = ProductForm()
     form2 = ProductImageForm()
     max_image = int(request.user.selling_vendor.subscription_plan) // 1000
     context = {"form": form, "form2":form2, "max":max_image}
     return render(request, self.template_name, context)
+  
   def post(self, request, store_name):
     max_image = int(request.user.selling_vendor.subscription_plan) // 1000
     form = ProductForm(request.POST, request.FILES)
@@ -369,14 +357,11 @@ class DeleteProduct(LoginRequiredMixin, SubscriptionCheckMixin, DeleteView):
 delete_product = DeleteProduct.as_view()
 
 
-import json
-
 def recently_viewed(request):
   if request.method == 'POST':
     return HttpResponse(status=200)
   else:
     return HttpResponse(status=405)
-
 
 
 class MakePurchase(View):

@@ -1,6 +1,6 @@
 import re
 from rest_framework import serializers
-from user.models import User, State, Location, Institution, Vendor, VendorApplication, SubscriptionHistory
+from user.models import User, UserInfo, State, Location, Institution, Vendor, SubscriptionHistory
 from store.models import Store, Product, ProductImage, Cart, Sales
 
 # USER, STORE 
@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
   
   class Meta:
     model = User
-    fields = ['username', 'password']
+    fields = ['username', 'password', 'email']
       
   def create(self, validated_data):
     password = validated_data.pop("password")
@@ -36,6 +36,13 @@ class UserSerializer(serializers.ModelSerializer):
     if not re.match(pattern, value):
       raise serializers.ValidationError("Invalid username. Please use only alphanumeric characters and underscores.")
     return value
+  
+class UserInfoSerializer(serializers.ModelSerializer):
+  # email = serializers.SerializerMethodField(readonly=True)
+  class Meta:
+    model = UserInfo
+    fields = ["first_name", "last_name", "email", "state", "location", "institution", "address", "tel"]
+    read_only_fields = ["email"]
 
 class StateSerializer(serializers.ModelSerializer):
   class Meta:
@@ -50,40 +57,72 @@ class LocationSerializer(serializers.ModelSerializer):
 class InstitutionSerializer(serializers.ModelSerializer):
   class Meta:
     model = Institution
-    fields = ["name", "state", "location"]
+    fields = ["id", "name", "state", "location"]
+    depth = 1
 
 
-class VendorApplicationSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = VendorApplication
-    fields = ["applicant"]
-    
 class VendorSerializer(serializers.ModelSerializer):
   class Meta:
     model = Vendor
     fields = "__all__"
     
+class ActivateSubscriptionSerializer(serializers.Serializer):
+  PACKAGES =(
+    (2000, "SPOTLIGHT"),
+    (5000, "HIGHLIGHT"),
+    (10000, "FEATURED"),
+  )
+  package = serializers.ChoiceField(choices=PACKAGES)
+  duration = serializers.IntegerField()
+
 class SubscriptionHistorySerializer(serializers.ModelSerializer):
   class Meta:
     model = SubscriptionHistory
     fields = "__all__"
     
     
-# STORE RELATED SERIALIZERS
+# store and product related
 class StoreSerializer(serializers.ModelSerializer):
   class Meta:
     model = Store
     fields = "__all__"
-
-class ProductSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Product
-    fields = "__all__"
+    read_only_field = ["owner"]
     
 class ProductImageSerializer(serializers.ModelSerializer):
   class Meta:
     model = ProductImage
-    field = "__all__"
+    fields = "__all__"
+    
+class ProductSerializer(serializers.ModelSerializer) :
+  product_image = ProductImageSerializer(many=True, read_only = True)
+  uploaded_images = serializers.ListField(
+    child = serializers.ImageField(max_length = 1000000, allow_empty_file = False, use_url = False),
+    write_only = True
+    )
+  
+  class Meta:
+    model = Product
+    fields = ["uuid", "vendor", "store", "title", "description", "thumbnail", "price", "product_image", "uploaded_images"]
+    read_only_field = ["uuid", "vendor", "store"]
+
+  def create(self, validated_data):
+    uploaded_data = validated_data.pop('uploaded_images')
+    new_product = Product.objects.create(**validated_data)
+    for uploaded_item in uploaded_data:
+      ProductImage.objects.create(product = new_product, image = uploaded_item)
+    return new_product
+  
+  def clear_existing_images(self, instance):
+    for image in instance.product_image.all():
+      image.delete()
+  
+  def update(self, instance, validated_data):
+    uploaded_data = validated_data.pop('uploaded_images', None)
+    if uploaded_data:
+      self.clear_existing_images(instance) # This clears the existing images
+      for uploaded_item in uploaded_data:
+        ProductImage.objects.create(product = instance, image = uploaded_item)
+    return super().update(instance, validated_data)
 
 class CartSerializer(serializers.ModelSerializer):
   class Meta:

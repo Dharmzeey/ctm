@@ -48,13 +48,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    # TAILWIND
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
-    
+        
     # MY CUSTOM MIDDLEWARE
     'utilities.middleware.VendorStoreMiddleware',
 ]
+
+
 
 ROOT_URLCONF = "ctm.urls"
 AUTH_USER_MODEL = "user.User"

@@ -61,28 +61,28 @@
 </div>
 
 <!-- THIS IS WHERE THE CODE THAT RENDERS THE PRODUCT STARTS -->
-<h2 class="text-center font-bold">{{ store.store_name }} Goods</h2>
+<h2 class="text-center font-bold">{{ store.store_name }} Products</h2>
 <div>
   <section id="">
-    <h1 class="font-bold py-4 text-xl">Goods</h1>
+    <h1 class="font-bold py-4 text-xl">Products</h1>
     <div class="grid-items">
-      {% for good in goods %}
+      {% for product in products %}
       <div class="w-full h-full bg-white rounded-t-lg">
-        <a class="flex flex-col justify-between" href="{% url 'store:detail_product' store_name=good.store.store_name product_uuid=good.uuid  %}">
+        <a class="flex flex-col justify-between" href="{% url 'store:detail_product' store_name=product.store.store_name product_uuid=product.uuid  %}">
           <div class="img-wrapper">
-            <img class="rounded-t-lg" src="{{ good.thumbnail.url }}" alt="{{ good.title }}">
+            <img class="rounded-t-lg" src="{{ product.thumbnail.url }}" alt="{{ product.title }}">
           </div>
           <div class="px-4">
-            <div class="pt-4">{{ good.title }}</div>
+            <div class="pt-4">{{ product.title }}</div>
             <div>
-              <small>&#8358; {{ good.price }}</small>
+              <small>&#8358; {{ product.price }}</small>
             </div>
           </div>
         </a>
         {% if owner %}
         <div>
-          <a class="link" href="{% url 'store:edit_product' store_name=store.store_name product_uuid=good.uuid %}">Edit Item</a> |
-          <a class="link" href="{% url 'store:delete_product' store_name=store.store_name product_uuid=good.uuid %}">Delete Item</a>
+          <a class="link" href="{% url 'store:edit_product' store_name=store.store_name product_uuid=product.uuid %}">Edit Item</a> |
+          <a class="link" href="{% url 'store:delete_product' store_name=store.store_name product_uuid=product.uuid %}">Delete Item</a>
         </div>
         {% endif %}
       </div>
