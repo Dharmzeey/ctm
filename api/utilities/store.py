@@ -1,1 +1,1 @@
-def active_store():
+# def active_store():
