@@ -19,37 +19,79 @@ from utilities.store import load_stores_helper
 from utilities.vendor import create_vendor, has_vendor_profile, view_vendor, activate_vendor_subscription
 
 from .utilities.error_handler import render_errors
+from .utilities.product_handler import show_product_helper
 from .utilities.token_handler import get_validate_send_token
 from .utilities.user_details import return_user_details
 from . import serializers as customAPISerializers
 
 """
-THE USER API VIEWS COMMENCES HERE
+THE HOMEPAGE API VIEWS COMMENCES HERE
 """
+# This will accept the change and set the request.session
+class ChangeViewingInfo(APIView):
+  def get(self, request):
+    state_id = request.data.get('state', None)
+    location_id = request.data.get('location', None)
+    institution_id = request.data.get('institution', None)
+    if state_id:
+      # SET THE SESSION OF STATE AND THE POPULATE THE FILTER FOR LOCATION MODEL
+      state = State.objects.get(id=state_id)
+      request.session["viewing_state"] = str(state)
+      request.session.pop("viewing_location", None)
+      request.session.pop("viewing_institution", None)      
+      locations = Location.objects.filter(state__id=state_id).order_by("name")
+      location_serializer = customAPISerializers.LocationSerializer(instance=locations, many=True)
+      data = {"locations": location_serializer.data}
+      return Response(data, status=status.HTTP_200_OK)
+    elif location_id:
+      location = Location.objects.get(id=location_id)
+      request.session["viewing_location"] = str(location)
+      request.session.pop("viewing_institution", None)      
+      institutions = Institution.objects.filter(location__id=location_id).order_by("name")
+      institution_serializer = customAPISerializers.LocationSerializer(instance=institutions, many=True)
+      data = {"institutions": institution_serializer.data}
+      return Response(data, status=status.HTTP_200_OK)
+    elif institution_id:
+      institution = Institution.objects.get(id=institution_id)
+      request.session["viewing_institution"] = str(institution)
+      return Response({"message": "Done"}, status=status.HTTP_200_OK)
+    return Response({"message": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
+change_viweing_info = ChangeViewingInfo.as_view()
+
+
+class LoadProductOnChangeViewingInfo(APIView):
+  def get(self, request):
+    response = show_product_helper(request).data
+    response.pop('states') #I am removing states because load product does not need it
+    return Response(response, status=status.HTTP_200_OK)
+on_change_load = LoadProductOnChangeViewingInfo.as_view()
+
 
 class HomePage(APIView):
   def get(self, request):
-    stores = filter_store(request, Store)
-    random_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:5]
-    random = Product.objects.filter(id__in=random_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)
-    random_product_serializer = customAPISerializers.ProductSerializer(instance=random, many=True, context={"request": request})
-    
-    recent_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("-created_at")[:5]
-    recent = Product.objects.filter(id__in=recent_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)
-    recent_product_serializer = customAPISerializers.ProductSerializer(instance=recent, many=True, context={"request": request})
-    data = {
-      "random_products": random_product_serializer.data,
-      "recent_products": recent_product_serializer.data,
-    }
-    return Response(data, status=status.HTTP_200_OK)
+    show_product_helper(request)
 homepage = HomePage.as_view()
 
 
-class HomePageSearch(APIView):
-  def get(self, request):
-    return Response()
+class HomePageSearch(generics.ListAPIView):
+  serializer_class = customAPISerializers.ProductSerializer
+  def get_queryset(self):
+    stores = filter_store(self.request, Store)    
+    q = self.request.GET.get("q", None)
+    if q:
+      return Product.objects.filter(
+        Q(title__icontains=q)|
+        Q(description__icontains=q),
+        vendor__active_subscription=True,
+        store__in=stores
+      )
+    return super().get_queryset()
 homepage_search = HomePageSearch.as_view()
 
+
+"""
+THE USER API VIEWS COMMENCES HERE
+"""
 
 class UserCreate(APIView):
   serializer_class = customAPISerializers.UserSerializer

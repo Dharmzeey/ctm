@@ -74,30 +74,29 @@ def load_data(request):
     state = State.objects.get(id=state_id)
     request.session["viewing_state"] = str(state)
     request.session.pop("viewing_location", None)
-    request.session.pop("viewing_institution", None)
-    
+    request.session.pop("viewing_institution", None)    
     locations = Location.objects.filter(state__id=state_id).order_by("name")
-    return render(request, 'store/data_list.html', {'locations': locations})
+    return render(request, 'store/data-list.html', {'locations': locations})
   
-  if location_id:
+  elif location_id:
     location = Location.objects.get(id=location_id)
     request.session["viewing_location"] = str(location)
-    request.session.pop("viewing_institution", None)
-    
+    request.session.pop("viewing_institution", None)    
     institutions = Institution.objects.filter(location__id=location_id).order_by("name")
-    return render(request, 'store/data_list.html', {'institutions': institutions})
+    return render(request, 'store/data-list.html', {'institutions': institutions})
   
-  if institution_id:
+  elif institution_id:
     institution = Institution.objects.get(id=institution_id)
     request.session["viewing_institution"] = str(institution)
-  return JsonResponse({"error": "AN error Occured"})
+    return JsonResponse({"success": "Done"})
+  return JsonResponse({"error": "An error occured"})
 
 # This will trigger when the user is on the homepage and then changing viewing information, the products are then filtered and displayed
 def on_filter_load(request):
   # This checks for the session viewing information set by the previous function
   stores = filter_store(request, Store)
-  randon_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:30]
-  products = Product.objects.filter(id__in=randon_products)
+  random_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:30]
+  products = Product.objects.filter(id__in=random_products)
   
   recent_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("-created_at")[:50]
   recent = Product.objects.filter(id__in=recent_products)

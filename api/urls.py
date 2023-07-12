@@ -4,6 +4,8 @@ from . import views
 app_name = 'api'
 
 urlpatterns = [
+  path('changeviewinginfo/', views.change_viweing_info, name="change_viweing_info"), #Async request
+  path('onchangeload/', views.on_change_load, name="on_change_load"), #Async request
   path('homepage/', views.homepage, name="homepage"),
   path('homepagesearch/', views.homepage_search, name="homepage_search"),
   path('recentlyviewed/', views.recently_viewed, name="recently_viewed"),
