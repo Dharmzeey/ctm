@@ -1,3 +1,4 @@
+<!-- this recieve the context from the load_data view of the store app and then renders its content inside the stores.html -->
 <option value="">------</option>
 {% for location in locations %}
 <option value="{{ location.pk }}">{{ location.name }}</option>

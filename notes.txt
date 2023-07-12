@@ -1,0 +1,7 @@
+12th July, 2023
+
+for the stores, I am currently doing it in such that all stores are listed either active or inactive, but when the details of the store is requested, the store that is active only gets rendered and the inactive ones is not
+
+Institution details is not compulsory, at least for buyers sha
+
+The random and recent product are still returning 5 

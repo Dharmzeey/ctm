@@ -23,7 +23,7 @@
 <body>
   {% if messages %}
   <!-- THIS IS FOR FLASH MESSAGE -->
-  <ul class="fixed bg-black text-white w-full p-3 text-center" id="pop-up">
+  <ul class="fixed bg-black text-white w-full p-3 text-center" id="flash-message">
     {% for message in messages %}
     <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
 

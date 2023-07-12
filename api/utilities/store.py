@@ -1,1 +1,0 @@
-# def active_store():

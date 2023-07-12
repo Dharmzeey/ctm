@@ -12,12 +12,13 @@ from django.shortcuts import get_object_or_404, redirect
 from django.db import IntegrityError
 
 from utilities.mixins import SubscriptionCheckMixin
+from utilities.store import load_stores_helper
 
 from .forms import StoreForm, ProductForm, FilterForm, ProductImageForm, EditProductImageForm
 from .models import Store, Product, ProductImage
 from user.models import Location, Institution, State
 
-
+# When the store is clicked, it displays all the stores at random
 class ListStores(ListView):
   model = Store
   template_name = "store/stores.html"
@@ -28,18 +29,18 @@ class ListStores(ListView):
     context =  super().get_context_data(**kwargs)
     context["form"] = form
     return context
-    
 list_stores = ListStores.as_view()
 
+# when in the store page and the state is clicked, it loads the location associated with the state and also when the location is clicked, it loads the institution associated with such location
 def load_data(request):
   state = request.GET.get('state', None)
   location = request.GET.get('location', None)
   if state:
     locations = Location.objects.filter(state__id=state).order_by("name")
-    return render(request, 'store/data_list.html', {'locations': locations})
+    return render(request, 'store/data-list.html', {'locations': locations})
   if location:
     institutions = Institution.objects.filter(location__id=location).order_by("name")
-    return render(request, 'store/data_list.html', {'institutions': institutions})
+    return render(request, 'store/data-list.html', {'institutions': institutions})
   return JsonResponse({"error": "An error occured"})
 
 
@@ -69,7 +70,6 @@ def load_data(request):
 """
 THIS CLASS IS ACCESSED BY AJAX
 WHEN IN THE STORE PAGE AND THE STATE / LOCATION / INSTITUTION IS BEING SELECTED, THE STORE GETS FILTERED AND RENDERED BASED ON WHERE SELECTED 
-ALSO STATE -> LOCATION -> INSTITUTION GETS FILTERED ALSO 
 """
 class LoadStores(View):
   model = Store
@@ -80,19 +80,7 @@ class LoadStores(View):
     state_id = request.GET.get("state", None)
     location_id = request.GET.get("location", None)
     institution_id = request.GET.get("institution", None)
-    context = {}
-    if state_id:
-      place = State.objects.get(id=state_id)
-      stores = self.model.objects.filter(owner__active_subscription=True, store_state__id=state_id).order_by("store_name")
-      context = {"stores": stores, "place": place}
-    elif location_id:
-      place = Location.objects.get(id=location_id)
-      stores = self.model.objects.filter(owner__active_subscription=True, store_location__id=location_id).order_by("store_name")
-      context = {"stores": stores, "place": place}
-    elif institution_id:
-      place = Institution.objects.get(id=institution_id)
-      stores = self.model.objects.filter(owner__active_subscription=True, store_institution__id=institution_id).order_by("store_name")
-      context = {"stores": stores, "place": place}
+    context = load_stores_helper(state_id, location_id, institution_id)
     return render(request, self.template_name, context)
 load_stores = LoadStores.as_view()
  

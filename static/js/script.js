@@ -12,9 +12,9 @@ if (document.querySelector("#menu-toggle-icon")) {
 }
 
 // THIS IS FOR POP UP MESSAGE DISAPPEAR
-if (document.getElementById("pop-up")) {
+if (document.getElementById("flash-message")) {
   window.onload = () => {
-    popUp = document.getElementById("pop-up");
+    popUp = document.getElementById("flash-message");
     setTimeout(() => {
       popUp.style.display = "none"
     }, 1700)

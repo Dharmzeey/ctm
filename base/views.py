@@ -46,6 +46,7 @@ def set_viewing_location(request):
   return 1
   
 def filter_store(request, model):
+  # This call will set the vieweing details in the session especially for user who has their details filled
   set_viewing_location(request)
   viewing_institution = request.session.get("viewing_institution", None)
   viewing_location = request.session.get("viewing_location", None)
@@ -63,6 +64,7 @@ def filter_store(request, model):
     store = model.objects.all()
   return store
 
+# This will trigger when the user is on the web homepage and then changing viewing information
 def load_data(request):
   state_id = request.GET.get('state', None)
   location_id = request.GET.get('location', None)
@@ -90,7 +92,9 @@ def load_data(request):
     request.session["viewing_institution"] = str(institution)
   return JsonResponse({"error": "AN error Occured"})
 
+# This will trigger when the user is on the homepage and then changing viewing information, the products are then filtered and displayed
 def on_filter_load(request):
+  # This checks for the session viewing information set by the previous function
   stores = filter_store(request, Store)
   randon_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:30]
   products = Product.objects.filter(id__in=randon_products)
@@ -103,6 +107,7 @@ def on_filter_load(request):
   }
   return render(request, "home/on-filter-load.html", context)
 
+# This will reset the request.session viweing details
 def reset_general(request):
   reset = request.GET.get("reset", None)
   general = request.GET.get("general", None)
@@ -124,14 +129,14 @@ class HomeView(View):
     form = FilterForm()
     stores = filter_store(request, Store)
         
-    randon_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:30]
-    products = Product.objects.filter(id__in=randon_products)
+    random_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:30]
+    random = Product.objects.filter(id__in=random_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)
     
     recent_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("-created_at")[:50]
-    recent = Product.objects.filter(id__in=recent_products)
+    recent = Product.objects.filter(id__in=recent_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)
 
     context = {
-      "products": products,
+      "products": random,
       "recent": recent,
       "form": form,
       "home": True

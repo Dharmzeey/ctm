@@ -29,6 +29,7 @@ class Institution(models.Model):
 class User(AbstractUser):
   username = models.CharField(max_length=50, unique=True)
   password = models.CharField(max_length=128)
+  email = models.EmailField(unique=True)
   created = models.DateTimeField(auto_now_add=True)
   updated = models.DateTimeField(auto_now=True)
 

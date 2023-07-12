@@ -12,9 +12,10 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from base.views import set_viewing_location, filter_store
-from store.models import Product, Store, ProductImage
-from user.models import SubscriptionHistory, User, UserInfo, Vendor, Institution
+from base.views import filter_store
+from store.models import Product, Store
+from user.models import SubscriptionHistory, User, UserInfo, Vendor, State, Location, Institution
+from utilities.store import load_stores_helper
 from utilities.vendor import create_vendor, has_vendor_profile, view_vendor, activate_vendor_subscription
 
 from .utilities.error_handler import render_errors
@@ -25,6 +26,30 @@ from . import serializers as customAPISerializers
 """
 THE USER API VIEWS COMMENCES HERE
 """
+
+class HomePage(APIView):
+  def get(self, request):
+    stores = filter_store(request, Store)
+    random_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:5]
+    random = Product.objects.filter(id__in=random_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)
+    random_product_serializer = customAPISerializers.ProductSerializer(instance=random, many=True, context={"request": request})
+    
+    recent_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("-created_at")[:5]
+    recent = Product.objects.filter(id__in=recent_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)
+    recent_product_serializer = customAPISerializers.ProductSerializer(instance=recent, many=True, context={"request": request})
+    data = {
+      "random_products": random_product_serializer.data,
+      "recent_products": recent_product_serializer.data,
+    }
+    return Response(data, status=status.HTTP_200_OK)
+homepage = HomePage.as_view()
+
+
+class HomePageSearch(APIView):
+  def get(self, request):
+    return Response()
+homepage_search = HomePageSearch.as_view()
+
 
 class UserCreate(APIView):
   serializer_class = customAPISerializers.UserSerializer
@@ -81,9 +106,9 @@ class UserCreate(APIView):
         }
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         return Response(data, status=status.HTTP_201_CREATED)
-      except IntegrityError:
+      except IntegrityError as e:
         return Response({'message': 'User with this email or username already exists.'}, status=status.HTTP_409_CONFLICT)
-    return Response({'message': f'User Creation Failed {serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'message': f'{serializer.errors}'}, status=status.HTTP_400_BAD_REQUEST)
 user_create = UserCreate.as_view()
 
 
@@ -222,8 +247,10 @@ class VendorProfile(APIView):
     if has_vendor_profile(request):
       serializer = self.serializer_class(instance=request.user.selling_vendor)
       vendor = view_vendor(request)
-      print(vendor["latest_sub"])
-      sub_history = customAPISerializers.SubscriptionHistorySerializer(instance=vendor["latest_sub"]).data
+      if vendor["latest_sub"] == "Free Trial":
+        sub_history = {'sub_date': 'Free Trial'}
+      else:
+        sub_history = customAPISerializers.SubscriptionHistorySerializer(instance=vendor["latest_sub"]).data
       data = {"data": serializer.data, "token":get_validate_send_token(request), "activated_on": sub_history['sub_date'], "days_remaining": vendor["days_remaining"]}
       return Response(data, status=status.HTTP_200_OK)
     return Response({"message": "You are not a vendor"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -267,8 +294,45 @@ store api view commences here
 
 class ListStore(generics.ListAPIView):
   serializer_class = customAPISerializers.StoreSerializer
-  queryset = Store.objects.filter(owner__active_subscription=True).order_by("?")
+  queryset = Store.objects.filter().order_by("?")
+  def list(self, request, *args, **kwargs):
+    store_list = super().list(request, *args, **kwargs)
+    states = State.objects.all()
+    state_serializer = customAPISerializers.StateSerializer(instance=states, many=True)
+    data = {"stores": store_list.data, "states": state_serializer.data}
+    return Response(data)
 list_stores = ListStore.as_view()
+
+# when in the store page and the state is clicked, it loads the location associated with the state and also when the location is clicked, it loads the institution associated with such location
+class FilterStorePlace(APIView):
+  def get(self, request):
+    state = request.data.get('state', None)
+    location = request.data.get('location', None)
+    if state:
+      locations = Location.objects.filter(state__id=state).order_by("name")
+      serializer = customAPISerializers.LocationSerializer(instance=locations, many=True)
+      return Response({"locations": serializer.data}, status=status.HTTP_200_OK)
+
+    if location:
+      institutions = Institution.objects.filter(location__id=location).order_by("name")
+      serializer = customAPISerializers.InstitutionSerializer(instance=institutions, many=True)
+      return Response({"institutions": serializer.data}, status=status.HTTP_200_OK)
+    return Response({"error": "An error occured"}, status=status.HTTP_404_NOT_FOUND)
+filter_store_place = FilterStorePlace.as_view()
+
+
+# This is an async view that will take id of state, location or institution and then returns the store
+class LoadFilteredStores(APIView):
+  def get(self, request):
+    state_id = request.data.get("state", None)
+    location_id = request.data.get("location", None)
+    institution_id = request.data.get("institution", None)
+    context = load_stores_helper(state_id, location_id, institution_id)
+    stores = customAPISerializers.StoreSerializer(instance=context["stores"], many=True, context={"request": request})
+    place = context["place"]
+    data = {"stores": stores.data, "place": place.name}
+    return Response(data, status=status.HTTP_200_OK)
+load_filtered_stores = LoadFilteredStores.as_view()  
 
 
 class SearchStore(generics.ListAPIView):
@@ -319,6 +383,8 @@ class EditStore(APIView):
   def patch(self, request):
     token = get_validate_send_token(request)
     store = get_object_or_404(Store, owner=self.request.user.selling_vendor.id)
+    if store.owner.active_subscription == False:
+      return Response({"message": "Store not active"}, status=status.HTTP_404_NOT_FOUND)
     serializer = self.serializer_class(instance=store, data=request.data, partial=True, context={'request': request})
     if serializer.is_valid():
       data = {"message": "Profile updated successfully", "data": serializer.data, "token": token}
@@ -337,7 +403,7 @@ class StoreDetails(APIView):
     except Store.DoesNotExist:
       return Response({"message": "No store found"}, status=status.HTTP_404_NOT_FOUND)
     if store.owner.active_subscription == False:
-      return Response({"message": "Store not active"}, status=status.HTTP_404_NOT_FOUND)
+      return Response({"message": "Store not active"}, status=status.HTTP_403_FORBIDDEN)
     products = Product.objects.filter(store=store.id)
     store_serializer = customAPISerializers.StoreSerializer(instance=store, context={'request': request})
     product_serializer = customAPISerializers.ProductSerializer(instance=products, many=True, context={'request': request})
@@ -367,15 +433,20 @@ class SearchProduct(generics.ListAPIView):
     stores = filter_store(self.request, Store)
     q = self.request.data["q"]
     if q:
-      return Product.objects.fiilter(
+      return Product.objects.filter(
         Q(title__icontains=q)|
         Q(description__icontains=q),
         vendor__active_subscription=True,
         store__in=stores
       )
     return super().get_queryset()
-  
+  def list(self, request, *args, **kwargs):
+    list_response = super().list(request, *args, **kwargs)
+    if len(list_response.data) < 1:
+      return Response({"message": "No product found"}, status=status.HTTP_204_NO_CONTENT)
+    return list_response
 search_product = SearchProduct.as_view()
+
 
 class AddProduct(generics.CreateAPIView):
   parser_classes = (MultiPartParser,)
@@ -383,6 +454,9 @@ class AddProduct(generics.CreateAPIView):
   serializer_class = customAPISerializers.ProductSerializer
   
   def create(self, request, *args, **kwargs):
+    vendor = self.request.user.selling_vendor
+    if vendor.active_subscription == False:
+      return Response({"message": "Your store is not active"}, status=status.HTTP_403_FORBIDDEN)
     images = request.FILES.getlist('uploaded_images')
     max_image = int(request.user.selling_vendor.subscription_plan) // 1000
     if len(images) >max_image:
@@ -407,6 +481,12 @@ class ProductDetails(generics.RetrieveAPIView):
     store = get_object_or_404(Store, store_name__iexact=self.request.data['store_name'])
     product = get_object_or_404(Product, uuid=self.request.data['product_uuid'], store=store)
     return product
+  
+  def retrieve(self, request, *args, **kwargs):
+    store = get_object_or_404(Store, store_name__iexact=request.data['store_name'])  
+    if store.owner.active_subscription == False:
+      return Response({"message": "Store is not active"}, status=status.HTTP_403_FORBIDDEN)
+    return super().retrieve(request, *args, **kwargs)
 detail_product = ProductDetails.as_view()
 
 
@@ -421,6 +501,8 @@ class EditProduct(generics.UpdateAPIView):
     return product
   
   def update(self, request, *args, **kwargs):
+    if request.user.selling_vendor.active_subscription == False:
+      return Response({"message": "Store is not active"}, status=status.HTTP_403_FORBIDDEN)
     update_response = super().update(request, *args, **kwargs)
     data = {"message": "Product updated", "data": update_response.data, "token": get_validate_send_token(request)}
     return Response(data)
@@ -436,6 +518,8 @@ class DeleteProduct(generics.DestroyAPIView):
     return product
   
   def destroy(self, request, *args, **kwargs):
+    if request.user.selling_vendor.active_subscription == False:
+      return Response({"message": "Store is not active"}, status=status.HTTP_403_FORBIDDEN)
     instance = self.get_object()
     self.perform_destroy(instance)
     return Response({"message": "Product deleted"}, status=status.HTTP_204_NO_CONTENT)

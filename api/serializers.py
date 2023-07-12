@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
     'invalid': 'Please enter a valid username',
   })
   
+  
   class Meta:
     model = User
     fields = ['username', 'password', 'email']
@@ -27,8 +28,10 @@ class UserSerializer(serializers.ModelSerializer):
   def create(self, validated_data):
     password = validated_data.pop("password")
     user = super().create(validated_data)
+    print(user)
     user.set_password(password)
     user.save()
+    print(user)
     return user
   
   def validate_username(self, value):
@@ -36,6 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
     if not re.match(pattern, value):
       raise serializers.ValidationError("Invalid username. Please use only alphanumeric characters and underscores.")
     return value
+
   
 class UserInfoSerializer(serializers.ModelSerializer):
   # email = serializers.SerializerMethodField(readonly=True)
@@ -43,16 +47,25 @@ class UserInfoSerializer(serializers.ModelSerializer):
     model = UserInfo
     fields = ["first_name", "last_name", "email", "state", "location", "institution", "address", "tel"]
     read_only_fields = ["email"]
+  def to_representation(self, instance):
+    representation = super().to_representation(instance)
+    representation['state'] = instance.state.name
+    representation['location'] = instance.location.name
+    representation['institution'] = instance.institution.name
+    return representation
+
 
 class StateSerializer(serializers.ModelSerializer):
   class Meta:
     model = State
-    fields = ["name"]
+    fields = "__all__"
+
     
 class LocationSerializer(serializers.ModelSerializer):
   class Meta:
     model = Location
-    fields = ["name", "state"]
+    fields = "__all__"
+
     
 class InstitutionSerializer(serializers.ModelSerializer):
   class Meta:
@@ -65,6 +78,11 @@ class VendorSerializer(serializers.ModelSerializer):
   class Meta:
     model = Vendor
     fields = "__all__"
+  def to_representation(self, instance):
+    representation = super().to_representation(instance)
+    representation['seller'] = instance.seller.username
+    return representation
+    
     
 class ActivateSubscriptionSerializer(serializers.Serializer):
   PACKAGES =(
@@ -75,10 +93,15 @@ class ActivateSubscriptionSerializer(serializers.Serializer):
   package = serializers.ChoiceField(choices=PACKAGES)
   duration = serializers.IntegerField()
 
+
 class SubscriptionHistorySerializer(serializers.ModelSerializer):
   class Meta:
     model = SubscriptionHistory
     fields = "__all__"
+  def to_representation(self, instance):
+    representation = super().to_representation(instance)
+    representation['vendor'] = instance.vendor.seller.username
+    return representation
     
     
 # store and product related
@@ -87,14 +110,29 @@ class StoreSerializer(serializers.ModelSerializer):
     model = Store
     fields = "__all__"
     read_only_field = ["owner"]
+  
+  def to_representation(self, instance):
+    representation = super().to_representation(instance)
+    representation['owner'] = instance.owner.seller.username
+    representation['store_state'] = instance.store_state.name
+    representation['store_location'] = instance.store_location.name
+    representation['store_institution'] = instance.store_institution.name
+    return representation
+    
     
 class ProductImageSerializer(serializers.ModelSerializer):
   class Meta:
     model = ProductImage
     fields = "__all__"
+  
+  def to_representation(self, instance):
+    representation = super().to_representation(instance)
+    representation['product'] = instance.product.title
+    return representation
+    
     
 class ProductSerializer(serializers.ModelSerializer) :
-  product_image = ProductImageSerializer(many=True, read_only = True)
+  product_images = ProductImageSerializer(many=True, read_only = True, source='product_image')
   uploaded_images = serializers.ListField(
     child = serializers.ImageField(max_length = 1000000, allow_empty_file = False, use_url = False),
     write_only = True
@@ -102,8 +140,14 @@ class ProductSerializer(serializers.ModelSerializer) :
   
   class Meta:
     model = Product
-    fields = ["uuid", "vendor", "store", "title", "description", "thumbnail", "price", "product_image", "uploaded_images"]
+    fields = ["id", "uuid", "vendor", "store", "title", "description", "thumbnail", "price", "product_images", "uploaded_images"]
     read_only_field = ["uuid", "vendor", "store"]
+    
+  def to_representation(self, instance):
+    representation = super().to_representation(instance)
+    representation['vendor'] = instance.vendor.seller.username
+    representation['store'] = instance.store.store_name
+    return representation
 
   def create(self, validated_data):
     uploaded_data = validated_data.pop('uploaded_images')
@@ -124,10 +168,12 @@ class ProductSerializer(serializers.ModelSerializer) :
         ProductImage.objects.create(product = instance, image = uploaded_item)
     return super().update(instance, validated_data)
 
+
 class CartSerializer(serializers.ModelSerializer):
   class Meta:
     model = Cart
     fields = "__all__"
+  
   
 class SalesSerializer(serializers.ModelSerializer):
   class Meta:

@@ -45,7 +45,7 @@ class ProductImage(models.Model):
   product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_image")
   image = models.ImageField(upload_to="products/%Y/%m")
   class Meta:
-    ordering = ["id"]
+    ordering = ["-id"]
   def __str__(self):
     return f"{self.product.vendor}-{self.product}"
 
