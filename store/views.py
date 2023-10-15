@@ -159,7 +159,7 @@ detail_store = StoreDetails.as_view()
 
 class AddProduct(LoginRequiredMixin, SubscriptionCheckMixin, View):
   template_name = "store/add-product.html"
-  def get(self, request):
+  def get(self, request, store_name): #store_name is used by the subscriptioncheckmixin
     form = ProductForm()
     form2 = ProductImageForm()
     max_image = int(request.user.selling_vendor.subscription_plan) // 1000

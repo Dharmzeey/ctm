@@ -10,11 +10,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # ADDED 
+    'django.contrib.sites', # ALLAUTH 
     
     "base.apps.BaseConfig",
     "user.apps.UserConfig",
     "store.apps.StoreConfig",
-    "api.apps.ApiConfig",
     
     'django_extensions',
     'django_cleanup.apps.CleanupConfig',
@@ -29,11 +30,7 @@ INSTALLED_APPS = [
     # CRISPY FORM
     'crispy_forms',
     'crispy_bootstrap4',
-    # DRF
-    'corsheaders',
-    'drf_spectacular',
-    'rest_framework',
-    'rest_framework_simplejwt',
+
     
 ]
 
@@ -42,7 +39,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -142,6 +138,10 @@ SITE_ID = 1
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 
 # TAILWIND
 TAILWIND_APP_NAME = 'theme'
@@ -152,6 +152,3 @@ NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 # CHRISPY
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
-
-# DRF
-from .drf_settings import *

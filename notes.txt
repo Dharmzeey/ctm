@@ -5,3 +5,8 @@ for the stores, I am currently doing it in such that all stores are listed eithe
 Institution details is not compulsory, at least for buyers sha
 
 The random and recent product are still returning 5 
+
+The dj-auth base url palava
+
+13th July, 2023
+Any User creation, password issh and verification will be done in the browser of the mobile

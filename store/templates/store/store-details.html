@@ -50,7 +50,7 @@
   </div>
 
   <!-- THE OWNER I USED BELOW IS PASSED FROM VIEWS.PY -->
-  {% if not request.user.is_anonymous and request.user.is_vendor and owner %}
+  {% if not request.user.is_anonymous and request.user.user_info.is_vendor and owner %}
   <br>
   <div>
     <div><a class="link" href="{% url 'store:edit_store' %}">Edit Store</a></div>
