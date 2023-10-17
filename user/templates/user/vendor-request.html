@@ -1,0 +1,85 @@
+{% extends 'base/base.html' %}
+{% block title %}
+<title>Vendor Request | Campus Trade Mart</title>
+{% endblock %}
+
+<h1>Become a Vendor</h1>
+
+{% block content %}
+<style>
+  .disabled {
+    opacity: 0.5;
+    /* make button appear disabled */
+    pointer-events: none;
+    /* disable mouse events */
+    cursor: not-allowed;
+    /* change cursor to not-allowed */
+  }
+</style>
+
+
+<h1 class="text-center font-bold">Terms of Service Agreement for Vendors</h1>
+<p>Welcome to <span>Campus Trade Mart</span>, an online marketplace where student vendors can sell their products to customers.</p>
+<p> By signing up as a vendor on our site, you agree to the following terms of service:</p>
+<ol class="flex flex-col gap-5 pt-4">
+  <li>Eligibility: You must be at least 18 years of age in any of Nigeria's tetriary institution and legally permitted to sell products in your
+    jurisdiction to become a vendor on our site.
+  </li>
+  <li>Product Listings: You agree to accurately describe your products and to provide high-quality images that accurately represent the product. You
+    also agree to comply with all laws and regulations related to the sale of your products.</li>
+  <li>Order Fulfillment: You agree to fulfill orders promptly and to provide customers with accurate tracking information. If you are unable to
+    fulfill an order, you must notify the customer and our support team as soon as possible.</li>
+  <li>Customer Service: You agree to provide excellent customer service and to promptly respond to customer inquiries and complaints. You also agree
+    to handle returns and refunds in a fair and timely manner.</li>
+  <li>Fees: You agree to pay all fees associated with selling on our site, including transaction fees and any applicable subscription fees.</li>
+  <li>Intellectual Property: You represent and warrant that you own or have the necessary rights to use any intellectual property associated with your
+    products, including trademarks, copyrights, and patents.</li>
+  <li>Prohibited Items: You agree not to sell any prohibited items on our site, including but not limited to illegal items, counterfeit products, and
+    products that violate intellectual property rights.</li>
+  <li>Indemnification: You agree to indemnify and hold harmless <span>Campus Trade Mart</span> and its affiliates, officers, directors, employees, and
+    agents
+    from any claims, damages, or expenses arising out of your use of our site or your violation of these terms of service.</li>
+  <li>Termination: We reserve the right to terminate your account and/or remove your product listings from our site at any time and for any reason.
+  </li>
+  <li>Changes to Terms of Service: We reserve the right to modify these terms of service at any time, and we will notify you of any changes via email
+    or through our website.</li>
+  <li>At first activation, you will have 7 days free trial on the <span>Spotlight</span> package.
+    After the seventh day, onward, you will need to make a monthly subscription</li>
+  <li>Incase of inactive subscription, the visibility of your products will be revoked and you store will have the <span>Inactive</span> tag till
+    after acrivation</li>
+  <li>
+    <span class="font-bold">As a Vendor, Please you should include institution in your profile info if you have not done so!!!</span>
+  </li>
+</ol>
+<p>By signing up as a vendor on our site, you acknowledge that you have read and agree to these terms of service. If you do not agree to these terms,
+  you may not use our site as a vendor.</p>
+
+<form method="post">
+  {% csrf_token %}
+  <label>
+    <input type="checkbox" id="agree" name="agree"> I agree to the terms and conditions.
+  </label>
+  <br><br>
+  <button id="submit" class="disabled" type="submit" disabled>Submit</button>
+</form>
+
+{% endblock %}
+
+{% block script %}
+<script>
+  // Get checkbox and submit button
+  var agreeCheckbox = document.getElementById("agree");
+  var submitButton = document.getElementById("submit");
+
+  // Add event listener to checkbox
+  agreeCheckbox.addEventListener("change", function () {
+    if (agreeCheckbox.checked) {
+      submitButton.classList.remove("disabled");
+      submitButton.removeAttribute("disabled");
+    } else {
+      submitButton.classList.add("disabled");
+      submitButton.setAttribute("disabled", "disabled");
+    }
+  });
+</script>
+{% endblock %}
