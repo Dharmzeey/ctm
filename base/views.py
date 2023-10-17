@@ -130,6 +130,7 @@ class HomeView(View):
         
     random_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("?")[:30]
     random = Product.objects.filter(id__in=random_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)
+    print(random)
     
     recent_products = Product.objects.filter(vendor__active_subscription=True, store__in=stores).order_by("-created_at")[:50]
     recent = Product.objects.filter(id__in=recent_products) # This line is to use the model ordering whieh is by (vendor subscription plan first and then -created at)

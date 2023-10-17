@@ -22,3 +22,4 @@ TAILWIND_MIDDLEWARE = [
 ]
 
 MIDDLEWARE += TAILWIND_MIDDLEWARE
+MEDIA_ROOT = "C:\pycharm\django_project\storage\ctm\media"
