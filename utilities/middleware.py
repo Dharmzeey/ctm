@@ -24,9 +24,6 @@ class VendorStoreMiddleware(MiddlewareMixin):
           return None
         elif request.path == reverse_lazy('account_login'):
           return None
-        # EXCLUDE THE URL OF THE API FOR LOGGING IN AND CREATING STORE
-        elif request.path == reverse_lazy('api:create_store') or request.path == reverse_lazy('api:user_login'):
-          return None
         elif request.path != reverse_lazy('store:create_store'):
           messages.info(request, "Please Update your store profile")
           return redirect(reverse_lazy("store:create_store"))

@@ -7,7 +7,7 @@
 } */
 
 body {
-  @apply bg-slate-100;
+  @apply bg-gray-50 ;
 }
 
 .img-wrapper{
@@ -30,20 +30,24 @@ img {
   @apply block;
 }
 
-select {
-  @apply py-0;
+input:not(input[type="checkbox"]):not(input[type="submit"]), textarea{
+  @apply bg-inherit w-full;
 }
 
-input :not(input[type="checkbox"]){
-  @apply py-1 bg-inherit !important;
+select {
+  @apply py-0 w-11/12;
 }
 
 select, textarea {
   @apply bg-inherit;
 }
 
+#data-form > p > select {
+  @apply w-full p-3;
+}
+
 button[type="reset"], button[type="submit"], input[type="submit"] {
-  @apply inline-block py-1 px-2 text-base text-black border bg-gray-100 border-black rounded mt-4;
+  @apply inline-block py-1 px-2 text-base text-black border bg-gray-300 border-black rounded mt-4;
 }
 
 .form-container > p {
@@ -59,5 +63,5 @@ button[type="reset"], button[type="submit"], input[type="submit"] {
 }
 
 .link, form a {
-  @apply text-blue-600 font-semibold;
+  @apply text-blue-600 font-semibold text-xs md:text-sm;
 }

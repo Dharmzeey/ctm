@@ -18,7 +18,8 @@
 </style>
 
 
-<h1 class="text-center font-bold">Terms of Service Agreement for Vendors</h1>
+<h1 class="text-center font-bold mb-2">Terms of Service Agreement for Vendors</h1>
+<div class="text-justify">
 <p>Welcome to <span>Campus Trade Mart</span>, an online marketplace where student vendors can sell their products to customers.</p>
 <p> By signing up as a vendor on our site, you agree to the following terms of service:</p>
 <ol class="flex flex-col gap-5 pt-4">
@@ -36,7 +37,7 @@
     products, including trademarks, copyrights, and patents.</li>
   <li>Prohibited Items: You agree not to sell any prohibited items on our site, including but not limited to illegal items, counterfeit products, and
     products that violate intellectual property rights.</li>
-  <li>Indemnification: You agree to indemnify and hold harmless <span>Campus Trade Mart</span> and its affiliates, officers, directors, employees, and
+  <li>Indemnification: You agree to indemnify and hold harmless <span class="font-bold">Campus Trade Mart</span> and its affiliates, officers, directors, employees, and
     agents
     from any claims, damages, or expenses arising out of your use of our site or your violation of these terms of service.</li>
   <li>Termination: We reserve the right to terminate your account and/or remove your product listings from our site at any time and for any reason.
@@ -53,13 +54,14 @@
 </ol>
 <p>By signing up as a vendor on our site, you acknowledge that you have read and agree to these terms of service. If you do not agree to these terms,
   you may not use our site as a vendor.</p>
+  </div>
 
 <form method="post">
   {% csrf_token %}
   <label>
     <input type="checkbox" id="agree" name="agree"> I agree to the terms and conditions.
   </label>
-  <br><br>
+  <br>
   <button id="submit" class="disabled" type="submit" disabled>Submit</button>
 </form>
 

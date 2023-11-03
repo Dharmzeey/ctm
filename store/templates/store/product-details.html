@@ -9,7 +9,7 @@
   {{ product }}
 </h1>
 <div>
-  <div class="img-wrapper"><img src="{{ product.thumbnail.url }}" alt="{{ product.title }}"></div>
+  <div class="img-wrapper pb-4"><img src="{{ product.thumbnail.url }}" alt="{{ product.title }}"></div>
   <div>
     <div class="flex gap-3 flex-wrap">
       {% for i in product.product_image.all %}
@@ -21,10 +21,11 @@
 <div>
   <small>&#8358; {{ product.price }}</small>
 </div>
-<small>
-  <a href="{% url 'store:detail_store' store_name=product.store.store_name %}">{{ product.store.store_name }}</a>
-</small>
-<div>{{ product.description }}</div>
+<div>
+  <a class="link" href="{% url 'store:detail_store' store_name=product.store.store_name %}">{{ product.store.store_name }}</a>
+</div>
+<div>Description</div>
+<div class="text-justify text-xs tracking-wide md:text-sm">{{ product.description }}</div>
 
 <div>
   <a id="make-purchase" class="link" href="">Purchase Item</a>
@@ -65,7 +66,7 @@
 </div>
 
 {% if more_items %}
-<br><br><br>
+<br>
 <h1 class="font-bold">Explore This Store</h1>
 <div class="flex flex-wrap gap-2">
   {% for good in more_items %}

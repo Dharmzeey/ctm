@@ -1,0 +1,73 @@
+{% load static %}
+<nav class="text-2xl">
+  <div class="p-2 flex justify-between relative">
+    <div>
+      <a href="{% url 'home' %}">
+        <div class="w-14">
+          <img src="{% static 'images/logo-no-bg.png' %}" alt="CTM logo">
+        </div>
+      </a>
+    </div>
+
+    <div>
+      <i class="fa-solid fa-location-dot px-3 z-10 " id="toggle-location"></i>
+      <button class="relative menu-toggle-icon z-5" id="menu-toggle-icon">
+        <i class="fa-solid fa-bars open-menu-icon toggle" id="open-menu"></i>
+        <i class="fa-solid fa-xmark close-menu-icon toggle" id="close-menu"></i>
+      </button>
+    </div>
+
+    <div id="set-location" class="absolute w-full top-12 p-2 pb-9 scale-y-0 bg-gray-50 text-xs md:text-lg transition ease-in-out delay-150">
+      <form class="flex flex-col gap-2" id="data-form" data-url="{% url 'load_data' %}">
+        <div>Current Viewing State: <small><b>{{ request.session.viewing_state|default:"Not Set" }}</b></small>
+          {{ form.state }}
+          <!-- {% if request.session.viewing_state %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
+        </div>
+        <div>Current Viewing Location: <small><b>{{ request.session.viewing_location|default:"Not Set" }}</b></small>
+          {{ form.location }}
+          <!-- {% if request.session.viewing_location %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
+        </div>
+        <div>Current Viewing Institution: <small><b>{{ request.session.viewing_institution|default:"Not Set" }}</b></small>
+          {{ form.institution }}
+          <!-- {% if request.session.viewing_institution %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
+        </div>
+        <div>
+          {% if request.user.is_authenticated %}
+          <button id="reset" type="reset">Reset</button>
+          {% endif %}
+          <button id="general" type="reset">Set to General</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="aside" class="aside bg-gray-50 fixed h-full hidden leading-10 p-10 w-full z-50 text-sm md:text-lg">
+    <div>
+      <a href="{% url 'store:list_stores' %}">Store</a>
+    </div>
+
+    {% if request.user.is_authenticated %}
+    <div>
+      <a href="{% url 'profile_view' %}">Profile</a>
+    </div>
+    {% if not request.user.user_info.is_vendor %}
+    <div>
+      <a href="{% url 'vendor_request' %}">Become a Vendor</a>
+    </div>
+    {% endif %}
+    {% if request.user.user_info.is_vendor %}
+    <div>
+      <a href="{% url 'vendor' %}">Vendor's Profile</a>
+    </div>
+    {% endif %}
+    <a href="{% url 'account_logout' %}">Sign Out </a>
+
+
+    {% else %}
+    <div class="flex flex-col">
+      <a href="{% url 'account_login' %}">Sign In</a>
+      <a href="{% url 'account_signup' %}">Register</a>
+    </div>
+    {% endif%}
+  </div>
+</nav>

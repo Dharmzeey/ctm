@@ -14,7 +14,7 @@
   </form>
 </div>
 
-<div>
+<!-- <div>
   <div>Current Viewing State: {{ request.session.viewing_state|default:"Not Set" }}
     {{ form.state }}
   </div>
@@ -24,7 +24,7 @@
   <div>Current Viewing Institution: {{ request.session.viewing_institution|default:"Not Set" }}
     {{ form.institution }}
   </div>
-</div>
+</div> -->
 
 {% if goods %}
 <section id="goods">
@@ -36,19 +36,25 @@
         <div class="img-wrapper">
           <img class="rounded-t-md" src="{{ good.thumbnail.url }}" alt="{{ good.title }}">
         </div>
-        <div class="px-4">
-          <div class="pt-4">{{ good.title }}</div>
+        <div class="px-4 pt-2 m-auto text-xs">
+          <div class="text-center">{{ good.title|truncatechars:20 }}</div>
           <div>
-            <small>&#8358; {{ good.price }}</small>
+            <div class="text-center">&#8358; {{ good.price }}</div>
           </div>
         </div>
       </a>
-      <small class="m-4 mb-6">
+      <div class="m-1 mb-6 text-xs md:text-sm">
         <a class="link" href="{% url 'store:detail_store' store_name=good.store.store_name %}">{{ good.store.store_name }}</a>
-      </small>
+      </div>
     </div>
     {% endfor %}
   </div>
 </section>
+{% else %}
+<h1 class="font-bold py-4 text-center">No matching items found</h1>
 {% endif %}
+
+<script>
+  let buttonUrl = "{% url 'reset_general' %}"
+</script>
 {% endblock %}

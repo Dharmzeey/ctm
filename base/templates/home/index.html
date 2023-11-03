@@ -7,32 +7,10 @@
 {% block content %}
 
 <div>
-  <form class="py-3 border-none" action="{% url 'search' %}">
-    <label class="py-3" for="q">
-      <input type="text" name="q" id="q" placeholder="Search Products">
+  <form class="py-1 border-none" action="{% url 'search' %}">
+    <label class="" for="q">
+      <input class="p-1 rounded-2xl" type="text" name="q" id="q" placeholder="Search Products">
     </label>
-  </form>
-</div>
-<div>
-  <form class="flex flex-col gap-2" id="data-form" data-url="{% url 'load_data' %}">
-    <div>Current Viewing State: <small><b>{{ request.session.viewing_state|default:"Not Set" }}</b></small>
-      {{ form.state }}
-      <!-- {% if request.session.viewing_state %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
-    </div>
-    <div>Current Viewing Location: <small><b>{{ request.session.viewing_location|default:"Not Set" }}</b></small>
-      {{ form.location }}
-      <!-- {% if request.session.viewing_location %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
-    </div>
-    <div>Current Viewing Institution: <small><b>{{ request.session.viewing_institution|default:"Not Set" }}</b></small>
-      {{ form.institution }}
-      <!-- {% if request.session.viewing_institution %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
-    </div>
-    <div>
-      {% if request.user.is_authenticated %}
-      <button id="reset" type="reset">Reset</button>
-      {% endif %}
-      <button id="general" type="reset">Set to General</button>
-    </div>
   </form>
 </div>
 
@@ -40,24 +18,24 @@
   {% if products or recent %}
   {% if products %}
   <section id="product">
-    <h1 class="font-bold py-4 text-xl">Products</h1>
-    <div class="grid-items">
+    <!-- <h1 class="font-bold pb-4 text-xl">Products</h1> -->
+    <div class="grid-items pt-4">
       {% for good in products %}
-      <div class="w-full h-full bg-white">
+      <div class="w-full h-full bg-white pb-2">
         <a class="flex flex-col justify-between" href="{% url 'store:detail_product' store_name=good.store.store_name product_uuid=good.uuid  %}">
           <div class="img-wrapper">
             <img class="rounded-t-md" src="{{ good.thumbnail.url }}" alt="{{ good.title }}">
           </div>
-          <div class="px-4">
-            <div class="pt-4">{{ good.title }}</div>
+          <div class="px-4 pt-2 m-auto text-xs md:text-sm">
+            <div class="text-center">{{ good.title|truncatechars:20 }}</div>
             <div>
-              <small>&#8358; {{ good.price }}</small>
+              <div class="text-center">&#8358; {{ good.price }}</div>
             </div>
           </div>
         </a>
-        <small class="m-4 mb-6">
+        <div class="m-1 mb-6 text-xs md:text-sm">
           <a class="link" href="{% url 'store:detail_store' store_name=good.store.store_name %}">{{ good.store.store_name }}</a>
-        </small>
+        </div>
       </div>
       {% endfor %}
     </div>
@@ -74,16 +52,16 @@
           <div class="img-wrapper">
             <img class="rounded-t-md" src="{{ good.thumbnail.url }}" alt="{{ good.title }}">
           </div>
-          <div class="px-4">
-            <div class="pt-4">{{ good.title }}</div>
+          <div class="px-4 pt-2 m-auto text-xs md:text-sm">
+            <div class="text-center">{{ good.title|truncatechars:20 }}</div>
             <div>
-              <small>&#8358; {{ good.price }}</small>
+              <div class="text-center">&#8358; {{ good.price }}</div>
             </div>
           </div>
         </a>
-        <small class="m-4 mb-6">
+        <div class="m-1 mb-6 text-xs md:text-sm">
           <a class="link" href="{% url 'store:detail_store' store_name=good.store.store_name %}">{{ good.store.store_name }}</a>
-        </small>
+        </div>
       </div>
       {% endfor %}
     </div>
@@ -100,100 +78,10 @@
 
 
 {% block script %}
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
 <script>
-
-  $('#id_state').change(function () {
-    let url = $("#data-form").attr("data-url");
-    let state = $(this).val();
-    $.ajax({
-      url: url,
-      data: {
-        'state': state
-      },
-      success: function (data) {
-        $("#id_location").html(data);
-        $("#id_institution").html('<option value="">---------</option>');
-
-        let productUrl = "{% url 'filter_load' %}"
-        $.ajax({
-          url: productUrl,
-          success: function (data) {
-            $("#recent-and-products").html(data)
-          }
-        })
-      }
-    })
-  })
-
-  $("#id_location").change(function () {
-    let url = $("#data-form").attr("data-url");
-    let location = $(this).val();
-    $.ajax({
-      url: url,
-      data: {
-        'location': location
-      }, success: function (data) {
-        $("#id_institution").html(data)
-
-        let productUrl = "{% url 'filter_load' %}"
-        $.ajax({
-          url: productUrl,
-          success: function (data) {
-            $("#recent-and-products").html(data)
-          }
-        })
-      }
-    })
-  })
-
-
-  $("#id_institution").change(function () {
-    let storeUrl = $("#data-form").attr("data-url");
-    let institution = $(this).val();
-    $.ajax({
-      url: storeUrl,
-      data: {
-        'institution': institution
-      },
-      success: function (data) {
-        $("#store-list").html(data);
-
-        let productUrl = "{% url 'filter_load' %}"
-        $.ajax({
-          url: productUrl,
-          success: function (data) {
-            $("#recent-and-products").html(data)
-          }
-        })
-      }
-    })
-  })
-
-  $("#reset").click(function () {
-    let buttonUrl = "{% url 'reset_general' %}"
-    $.ajax({
-      url: buttonUrl,
-      data: {
-        'reset': true
-      }, success() {
-        location.reload()
-      }
-    })
-  })
-
-  $("#general").click(function () {
-    let buttonUrl = "{% url 'reset_general' %}"
-    $.ajax({
-      url: buttonUrl,
-      data: {
-        'general': true
-      }, success() {
-        location.reload()
-      }
-    })
-  })
-
+  let productUrl = "{% url 'filter_load' %}"
+  let buttonUrl = "{% url 'reset_general' %}"
 </script>
 
 {% endblock %}

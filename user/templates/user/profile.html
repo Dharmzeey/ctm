@@ -11,7 +11,7 @@
   <form class="form-class" method="POST" action="" enctype="multipart/form-data" id="data-form" data-url="{% url 'store:load_data' %}">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" name="submit" value="Submit" id="submit">
+    <input type="submit" name="submit" value="Submit" id="submit" class="bg-red-500">
   </form>
 </div>
 {% endblock %}

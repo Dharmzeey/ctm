@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<div>
+<div class="text-xs md:text-sm">
   {% if inactive and owner %}
   <h1>Your Store is currently Inactive</h1>
   <h2>Do You want to activate you subscription
@@ -17,10 +17,10 @@
   <h1>{{ store_name }}'s Store is currently Inactive</h1>
   {% else %}
 
-  <div style="background-image: url('{{ store.store_bg_img.url }}');" class="bg-cover bg-no-repeat flex mb-32 h-52 relative">
-    <div class="absolute w-full flex top-24 z-10">
+  <div style="background-image: url('{{ store.store_bg_img.url }}');" class="bg-cover bg-no-repeat flex mb-32 h-32 relative">
+    <div class="absolute w-full flex top-12 z-10">
       <div class="w-full">
-        <div class="w-40 h-40"><img id="store-logo" class="rounded-full " src="{{ store.store_logo.url }}" alt="{{ store.store_name }}"></div>
+        <div class="w-32 h-32"><img id="store-logo" class="rounded-full " src="{{ store.store_logo.url }}" alt="{{ store.store_name }}"></div>
         <div class="w-11/12 grid grid-cols-2 gap-2">
           <div>
             <div>{{ store.store_name }}'s Shop</div>
@@ -28,7 +28,7 @@
           </div>
           <div class="justify-self-end">
             <div>{{ store.whatsapp_number }}</div>
-
+            <a href="tel:{{ store.whatsapp_number }}"><i class="fa-brands fa-whatsapp"></i></a>
             {% if store.instagram %}
             <a href="{{ store.instagram }}"><i class="fa-brands fa-instagram"></i></a>
             {% endif %}
@@ -36,16 +36,15 @@
             <a href="{{ store.tiktok }}"><i class="fa-brands fa-tiktok"></i></a>
             {% endif %}
             {% if store.twitter %}
-            <a href="{{ store.twitter }}"><i class="fa-brands fa-twitter"></i></a>
+            <a href="{{ store.twitter }}"><i class="fa-brands fa-x-twitter"></i></i></a>
             {% endif %}
             {% if store.website %}
             <a href="{{ store.website }}"><i class="fa-solid fa-globe"></i></a>
             {% endif %}
           </div>
-          <div class="col-span-2 text-center font-semibold">{{ store.store_motto }}</div>
+          <div class="col-span-2 text-center font-semibold">Motto: {{ store.store_motto }}</div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -61,26 +60,29 @@
 </div>
 
 <!-- THIS IS WHERE THE CODE THAT RENDERS THE PRODUCT STARTS -->
-<h2 class="text-center font-bold">{{ store.store_name }} Products</h2>
+{% if products %}
 <div>
   <section id="">
-    <h1 class="font-bold py-4 text-xl">Products</h1>
-    <div class="grid-items">
+    <h2 class="text-center font-bold mt-5 text-xs md:text-sm">{{ store.store_name }} Products</h2>
+    <!-- <h1 class="font-bold py-4 text-xl">Products</h1> -->
+    <div class="grid-items mt-3">
       {% for product in products %}
-      <div class="w-full h-full bg-white rounded-t-lg">
-        <a class="flex flex-col justify-between" href="{% url 'store:detail_product' store_name=product.store.store_name product_uuid=product.uuid  %}">
+      <div class="w-full h-full bg-white rounded-t-lg pb-3">
+        <a class="flex flex-col justify-between"
+          href="{% url 'store:detail_product' store_name=product.store.store_name product_uuid=product.uuid  %}">
           <div class="img-wrapper">
             <img class="rounded-t-lg" src="{{ product.thumbnail.url }}" alt="{{ product.title }}">
           </div>
-          <div class="px-4">
-            <div class="pt-4">{{ product.title }}</div>
+          <div class="px-4 m-auto text-xs md:text-sm">
+            <div class="pt-3">{{ product.title }}</div>
             <div>
-              <small>&#8358; {{ product.price }}</small>
+              <div>&#8358; {{ product.price }}</div>
             </div>
           </div>
+         
         </a>
         {% if owner %}
-        <div>
+        <div class="text-center">
           <a class="link" href="{% url 'store:edit_product' store_name=store.store_name product_uuid=product.uuid %}">Edit Item</a> |
           <a class="link" href="{% url 'store:delete_product' store_name=store.store_name product_uuid=product.uuid %}">Delete Item</a>
         </div>
@@ -89,6 +91,10 @@
       {% endfor %}
     </div>
   </section>
+  {% else %}
+  <h1 class="font-bold py-4 text-center relative top-10">No product in this store</h1>
   {% endif %}
 </div>
+
+{% endif %}
 {% endblock %}

@@ -214,8 +214,7 @@ class ProductDetails(SubscriptionCheckMixin, DetailView):
   
   def get_context_data(self, **kwargs):
     context =  super().get_context_data(**kwargs)
-    product = self.get_object()
-    
+    product = self.get_object()    
     recently_viewed = self.request.session.get("recently_viewed", [])
     
     if str(product.uuid) not in recently_viewed:
@@ -230,6 +229,7 @@ class ProductDetails(SubscriptionCheckMixin, DetailView):
     context['more_items'] = store_goods
     context['recently_viewed'] = sorted_qs
     context['store'] = store
+  
     return context
 detail_product = ProductDetails.as_view()
 
@@ -280,9 +280,6 @@ detail_product = ProductDetails.as_view()
 #       return render(request, self.template_name, context)
     
 #     if form.is_valid:
-#       print(request.POST)
-#       print(get_new_images)
-#       print(existing_images)
 #       store_name = self.request.user.selling_vendor.store_owner
 #       messages.info(request, "Product Updated Sucessfully")
 #       product = form.save()
