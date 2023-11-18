@@ -1,37 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <h1>Activate Subscription</h1>
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+<title>{{ request.user }} | Campus Trade Mart</title>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h1 class="font-bold text-center text-2xl">Activate Subscription</h1>
   <form action="" method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" name="" id="submit" value="Make Payment">
   </form>
-</body>
+</div>
+
 <script>
   let form = document.querySelector("form");
   let packages = document.getElementsByName("package");
   let duration = document.querySelector("#id_duration");
   let total = document.querySelector("#id_total");
-  
-  form.addEventListener("change", ()=>{
-  function getPackage(val){
-    for (let i = 0; i < val.length; i++){
-      if (val[i].checked){
-        return val[i].value;
+
+  form.addEventListener("change", () => {
+    function getPackage(val) {
+      for (let i = 0; i < val.length; i++) {
+        if (val[i].checked) {
+          return val[i].value;
+        }
       }
     }
-  }
-  let selectedValue = getPackage(packages);
+    let selectedValue = getPackage(packages);
     result = selectedValue * duration.value
     total.value = result
   })
 
 </script>
-</html>
+{% endblock %}

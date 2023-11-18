@@ -7,7 +7,7 @@
 } */
 
 body {
-  @apply bg-gray-50 ;
+  @apply bg-gray-50 text-xs md:text-sm;
 }
 
 .img-wrapper{
@@ -19,7 +19,7 @@ img {
 }
 
 .grid-items {
-  @apply grid grid-cols-2 gap-3 lg:grid-cols-3;
+  @apply grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 lg:gap-5;
 }
 
 .menu-toggle-icon.activated .open-menu-icon, .close-menu-icon{
@@ -30,8 +30,8 @@ img {
   @apply block;
 }
 
-input:not(input[type="checkbox"]):not(input[type="submit"]), textarea{
-  @apply bg-inherit w-full;
+input:not(input[type="checkbox"]):not(input[type="submit"]):not(input[type="radio"]), textarea{
+  @apply bg-inherit w-full text-xs md:text-sm;
 }
 
 select {
@@ -42,8 +42,8 @@ select, textarea {
   @apply bg-inherit;
 }
 
-#data-form > p > select {
-  @apply w-full p-3;
+#data-form > p > select, #product-form > p > select {
+  @apply w-full p-3 py-2;
 }
 
 button[type="reset"], button[type="submit"], input[type="submit"] {

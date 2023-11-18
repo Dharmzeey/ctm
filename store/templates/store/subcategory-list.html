@@ -1,0 +1,6 @@
+<!-- this recieve the context from the load_data view of the store app and then renders its content inside the stores.html -->
+<option value="">------</option>
+{% for subcategory in subcategories %}
+<option value="{{ subcategory.pk }}">{{ subcategory.name }}</option>
+{% endfor %}
+

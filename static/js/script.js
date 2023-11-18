@@ -23,7 +23,7 @@ if (document.getElementById("flash-message")) {
 
 // this is for location filter and set
 
-$('#toggle-location').click(function(){
+$('#toggle-location').click(function () {
   $('#set-location').toggleClass('scale-y-0');
 })
 
@@ -39,13 +39,15 @@ $('#id_state').change(function () {
       $("#id_location").html(data);
       $("#id_institution").html('<option value="">---------</option>');
 
-      // let productUrl = "{% url 'filter_load' %}"
-      $.ajax({
-        url: productUrl,
-        success: function (data) {
-          $("#recent-and-products").html(data)
-        }
-      })
+
+      if (typeof productUrl !== 'undefined') {
+        $.ajax({
+          url: productUrl,
+          success: function (data) {
+            $("#list-container").html(data)
+          }
+        })
+      }
     }
   })
 })
@@ -60,13 +62,14 @@ $("#id_location").change(function () {
     }, success: function (data) {
       $("#id_institution").html(data)
 
-      // let productUrl = "{% url 'filter_load' %}"
-      $.ajax({
-        url: productUrl,
-        success: function (data) {
-          $("#recent-and-products").html(data)
-        }
-      })
+      if (typeof productUrl !== 'undefined') {
+        $.ajax({
+          url: productUrl,
+          success: function (data) {
+            $("#list-container").html(data)
+          }
+        })
+      }
     }
   })
 })
@@ -83,19 +86,19 @@ $("#id_institution").change(function () {
     success: function (data) {
       $("#store-list").html(data);
 
-      // let productUrl = "{% url 'filter_load' %}"
-      $.ajax({
-        url: productUrl,
-        success: function (data) {
-          $("#recent-and-products").html(data)
-        }
-      })
+      if (typeof productUrl !== 'undefined') {
+        $.ajax({
+          url: productUrl,
+          success: function (data) {
+            $("#list-container").html(data)
+          }
+        })
+      }
     }
   })
 })
 
 $("#reset").click(function () {
-  // let buttonUrl = "{% url 'reset_general' %}"
   $.ajax({
     url: buttonUrl,
     data: {
@@ -107,13 +110,26 @@ $("#reset").click(function () {
 })
 
 $("#general").click(function () {
-  // let buttonUrl = "{% url 'reset_general' %}"
   $.ajax({
     url: buttonUrl,
     data: {
       'general': true
     }, success() {
       location.reload()
+    }
+  })
+})
+
+
+$("#id_category").change(function () {
+  let category = $(this).val();
+  $.ajax({
+    url: subcategory_url,
+    data: {
+      'category': category
+    },
+    success: function (data) {
+      $("#id_subcategory").html(data);
     }
   })
 })

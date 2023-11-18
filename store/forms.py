@@ -1,6 +1,7 @@
 from django import forms
 from .models import Store, Product, ProductImage
-from user.models import Institution, Location, State
+from user.models import Institution, Location
+from .models import Catergory, SubCategory
 
 class StoreForm(forms.ModelForm):
   class Meta:
@@ -37,6 +38,19 @@ class ProductForm(forms.ModelForm):
       'description': forms.Textarea(attrs={'rows':'4'})
     }
     
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.fields['subcategory'].queryset = SubCategory.objects.none()
+    
+    if 'category' in self.data and 'subcategory' in self.data:
+      try:
+        category_id = int(self.data.get('category'))
+        self.fields['subcategory'].queryset = SubCategory.objects.filter(category__id=category_id)
+      except (ValueError, TypeError):
+        pass
+    elif self.instance.category:
+      self.fields['subcategory'].queryset = self.instance.category.subcategory_category
+    
     
 class ProductImageForm(forms.ModelForm):
   class Meta:
@@ -71,8 +85,27 @@ class FilterForm(forms.ModelForm):
     fields = ("state", "location", "institution")
     
   def __init__(self, *args, **kwargs):
+    self.request = kwargs.pop('request', None)
     super().__init__(*args, **kwargs)
     self.fields['location'].queryset = Location.objects.none()
+    self.fields['institution'].queryset = Institution.objects.none()
+    
+    viewing_institution = self.request.session.get("viewing_institution", None)
+    viewing_location = self.request.session.get("viewing_location", None)
+    viewing_state = self.request.session.get("viewing_state", None)
+    print(viewing_state)
+    
+    # if viewing_institution:
+    #   # self.fields['state'].queryset = State.objects.get(id=viewing_state)
+    #   self.fields['location'].queryset = Location.objects.filter(state=viewing_state)
+    #   self.fields['institution'].queryset = Institution.objects.filter(state=viewing_state, location=viewing_location)
+      
+    # if viewing_location:
+    #   # self.fields['state'].queryset = State.objects.get(id=viewing_state)
+    #   self.fields['location'].queryset = Location.objects.filter(state=viewing_state)
+      
+    # if viewing_state:
+      # self.fields['state'].queryset = State.objects.filter(id=viewing_state)
 
 
 from django.forms.models import inlineformset_factory

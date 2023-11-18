@@ -1,3 +1,4 @@
+from typing import Any
 from django.shortcuts import render
 from django.db.models import Q
 from django.views import View
@@ -7,16 +8,15 @@ from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.db import IntegrityError
 
 from utilities.mixins import SubscriptionCheckMixin
-from utilities.store import load_stores_helper
+from utilities.locations import filter_store
 
 from .forms import StoreForm, ProductForm, FilterForm, ProductImageForm, EditProductImageForm
-from .models import Store, Product, ProductImage
-from user.models import Location, Institution, State
+from .models import Store, Product, ProductImage, SubCategory
 
 # When the store is clicked, it displays all the stores at random
 class ListStores(ListView):
@@ -24,80 +24,40 @@ class ListStores(ListView):
   template_name = "store/stores.html"
   context_object_name = "stores"
   queryset = Store.objects.all().order_by("?")
+  def get_queryset(self):
+    filtered_store = filter_store(self.request)['stores']
+    stores = Store.objects.filter(id__in=filtered_store).order_by("?")
+    return stores
   def get_context_data(self, **kwargs):
-    form = FilterForm()
+    form = FilterForm(request=self.request)
     context =  super().get_context_data(**kwargs)
     context["form"] = form
+    context["place"] = filter_store(self.request)['place']
     return context
 list_stores = ListStores.as_view()
 
 # when in the store page and the state is clicked, it loads the location associated with the state and also when the location is clicked, it loads the institution associated with such location
-def load_data(request):
-  state = request.GET.get('state', None)
-  location = request.GET.get('location', None)
-  if state:
-    locations = Location.objects.filter(state__id=state).order_by("name")
-    return render(request, 'store/data-list.html', {'locations': locations})
-  if location:
-    institutions = Institution.objects.filter(location__id=location).order_by("name")
-    return render(request, 'store/data-list.html', {'institutions': institutions})
-  return JsonResponse({"error": "An error occured"})
+def on_store_filter_load(request):
+  return render(request, 'store/store-list.html', filter_store(request))
 
-
-# I AM USING LISTVIEW BECAUSE I MIGHT WANT TO PAGINATE AND IT COMES IN HANDY
-# class LoadStores(ListView):
-#   model = Store
-#   template_name = "stores/store-list.html"
-#   context_object_name = "stores"
-  
-#   def get_queryset(self):
-#     state_id = self.request.GET.get("state", None)
-#     location_id = self.request.GET.get("location", None)
-#     institution_id = self.request.GET.get("institution", None)
-#     if state_id:
-#       return super().get_queryset().filter(store_state__id=state_id).order_by("store_name")
-#     elif location_id:
-#       return super().get_queryset().filter(store_location__id=location_id).order_by("store_name")
-#     elif institution_id:
-#       return super().get_queryset().filter(store_institution__id=institution_id).order_by("store_name")
-#     return super().get_queryset()   
-  
-#   def get_context_data(self, **kwargs):
-#     context =  super().get_context_data(**kwargs)
-#     return context
-# load_stores = LoadStores.as_view()
-
-"""
-THIS CLASS IS ACCESSED BY AJAX
-WHEN IN THE STORE PAGE AND THE STATE / LOCATION / INSTITUTION IS BEING SELECTED, THE STORE GETS FILTERED AND RENDERED BASED ON WHERE SELECTED 
-"""
-class LoadStores(View):
-  model = Store
-  template_name = "store/store-list.html"
-  context_object_name = "stores"
-  
-  def get(self, request):
-    state_id = request.GET.get("state", None)
-    location_id = request.GET.get("location", None)
-    institution_id = request.GET.get("institution", None)
-    context = load_stores_helper(state_id, location_id, institution_id)
-    return render(request, self.template_name, context)
-load_stores = LoadStores.as_view()
- 
 
 class SearchStore(ListView):
   model = Store
   template_name = "store/stores.html"
   context_object_name = "stores"
   def get_queryset(self):
+    filtered_store = filter_store(self.request)['stores']
     q = self.request.GET.get("q", None)
     if q:
       return super().get_queryset().filter(
-      Q(store_name__icontains=q),
-      owner__active_subscription=True, 
+      Q(store_name__icontains=q) & Q (id__in=filtered_store),
       )
     else:
-      return super().get_queryset()
+      return super().get_queryset().filter(id__in=filtered_store)
+  def get_context_data(self, **kwargs: Any):
+     context = super().get_context_data(**kwargs)
+     context['place'] = filter_store(self.request)['place']
+     return context
 search_store = SearchStore.as_view()
 
 
@@ -156,6 +116,14 @@ class StoreDetails(SubscriptionCheckMixin, View):
     return render(request, self.template_name, context)
 detail_store = StoreDetails.as_view()
 
+
+def load_subcategory(request):
+  category_id = request.GET.get('category')
+  subcategories = SubCategory.objects.filter(category=category_id)
+  context = {
+    "subcategories": subcategories
+  }
+  return render(request, "store/subcategory-list.html", context)
 
 class AddProduct(LoginRequiredMixin, SubscriptionCheckMixin, View):
   template_name = "store/add-product.html"

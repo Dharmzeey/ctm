@@ -5,9 +5,9 @@ app_name = "store"
 
 urlpatterns = [
   path("", views.list_stores, name="list_stores"),
-  path("data-ajax/", views.load_data, name="load_data"),
-  path("store-ajax/", views.load_stores, name="load_stores"),
+  path("store-ajax/", views.on_store_filter_load, name="load_filtered_stores"),
   path("search/", views.search_store, name="search_store"),
+  path("load-subcategories/", views.load_subcategory, name="load_subcategory"),
   
   path("recently-viewed/", views.recently_viewed, name="recently_viewed"),
   

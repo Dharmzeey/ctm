@@ -5,33 +5,33 @@
 {% endblock %}
 
 {% block content %}
-<!-- <h1 class="text-center font-bold text-2xl">Stores</h1> -->
-<!-- <form action="" id="data-form" data-url="{% url 'store:load_data' %}" data-store-url="{% url 'store:load_stores' %}">
-  <div class="flex flex-col gap-3 mb-3">
-    {{ form.as_p }}
-  </div>
-</form> -->
 <div>
   <form action="{% url 'store:search_store' %}">
-    <input type="text" name="q" placeholder="Search for store">
+    <input class="p-1 rounded-2xl" type="text" name="q" placeholder="Search for store">
   </form>
 
-  <div id="store-list" class="flex gap-1 flex-wrap m-auto pt-4 w-11/12">
-    {% for store in stores %}
-    <div>
-      <a href="{% url 'store:detail_store' store_name=store.store_name %}" class="flex flex-col justify-between">
-        <div class="w-32 h-32">
-          <img src="{{ store.store_logo.url }}" alt="{{ store.store_name }}">
-        </div>
-        <div>
-          <h3 class="text-center">{{ store.store_name }}</h3>
-          <small class="text-sm">{{ store.store_motto|truncatechars:20 }}</small>
-        </div>
-      </a>
+  <div id="list-container">
+    {% if stores %}
+    <h1 class="py-2 text-center font-bold">Stores in {{ place }}</h1>
+    <div id="store-list" class="grid-items pt-4">
+      {% for store in stores %}
+      <div class="w-full h-full bg-white pb-2">
+        <a href="{% url 'store:detail_store' store_name=store.store_name %}" class="flex flex-col justify-between">
+          <div class="img-wrapper">
+            <img class="rounded-t-md" src="{{ store.store_logo.url }}" alt="{{ store.store_name }}">
+          </div>
+
+          <div class="px-4 pt-2 m-auto text-xs md:text-sm">
+            <h3 class="text-center">{{ store.store_name }}</h3>
+            <div class="text-center text-sm">{{ store.store_motto|truncatechars:20 }}</div>
+          </div>
+        </a>
+      </div>    
+      {% endfor %}
     </div>
-    {% empty %}
-    <h3>No Stores Available</h3>
-    {% endfor %}
+    {% else %}
+    <h3 class="text-center">No Stores Available to show</h3>
+    {% endif %}
   </div>
 </div>
 
@@ -41,7 +41,7 @@
 
 
 <script>
-  let productUrl = "{% url 'filter_load' %}"
+  let productUrl = "{% url 'store:load_filtered_stores' %}"
   let buttonUrl = "{% url 'reset_general' %}"
 </script>
 

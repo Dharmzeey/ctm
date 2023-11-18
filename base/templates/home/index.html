@@ -9,12 +9,12 @@
 <div>
   <form class="py-1 border-none" action="{% url 'search' %}">
     <label class="" for="q">
-      <input class="p-1 rounded-2xl" type="text" name="q" id="q" placeholder="Search Products">
+      <input class="p-1 rounded-2xl" type="text" name="q" id="q" placeholder="Search for Products">
     </label>
   </form>
 </div>
 
-<div id="recent-and-products">
+<div id="list-container">
   {% if products or recent %}
   {% if products %}
   <section id="product">

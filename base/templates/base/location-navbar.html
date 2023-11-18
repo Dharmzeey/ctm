@@ -19,15 +19,15 @@
 
     <div id="set-location" class="absolute w-full top-12 p-2 pb-9 scale-y-0 bg-gray-50 text-xs md:text-lg transition ease-in-out delay-150">
       <form class="flex flex-col gap-2" id="data-form" data-url="{% url 'load_data' %}">
-        <div>Current Viewing State: <small><b>{{ request.session.viewing_state|default:"Not Set" }}</b></small>
+        <div>Current Viewing State: <small><b>{{ request.session.viewing_state_name|default:"Not Set" }}</b></small>
           {{ form.state }}
           <!-- {% if request.session.viewing_state %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
         </div>
-        <div>Current Viewing Location: <small><b>{{ request.session.viewing_location|default:"Not Set" }}</b></small>
+        <div>Current Viewing Location: <small><b>{{ request.session.viewing_location_name|default:"Not Set" }}</b></small>
           {{ form.location }}
           <!-- {% if request.session.viewing_location %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
         </div>
-        <div>Current Viewing Institution: <small><b>{{ request.session.viewing_institution|default:"Not Set" }}</b></small>
+        <div>Current Viewing Institution: <small><b>{{ request.session.viewing_institution_name|default:"Not Set" }}</b></small>
           {{ form.institution }}
           <!-- {% if request.session.viewing_institution %} <span>Change</span> {% else %} <span>Set</span> {% endif %} -->
         </div>

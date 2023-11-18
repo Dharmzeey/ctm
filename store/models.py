@@ -5,6 +5,21 @@ from django.db import models
 from django.utils import timezone
 from user.models import User, Vendor, State, Location, Institution
 
+class Catergory(models.Model):
+  name = models.CharField(max_length=50)
+  def __str__(self):
+    return self.name
+  class Meta:
+    ordering = ["name"]
+
+class SubCategory(models.Model):
+  category = models.ForeignKey(Catergory, on_delete=models.SET_NULL, related_name="subcategory_category",null=True)
+  name = models.CharField(max_length=50)
+  def __str__(self):
+    return self.name
+  class Meta:
+    ordering = ["name"]
+
 
 class Store(models.Model):
   owner = models.OneToOneField(Vendor, on_delete=models.SET_NULL, related_name="store_owner", null=True)
@@ -29,6 +44,8 @@ class Product(models.Model):
   uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
   vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, related_name="product_vendor", null=True)
   store = models.ForeignKey(Store, on_delete=models.SET_NULL, related_name="product_store", null=True)
+  category = models.ForeignKey(Catergory, related_name="product_category", on_delete=models.SET_NULL, null=True)
+  subcategory = models.ForeignKey(SubCategory, related_name="product_subcategory", on_delete=models.SET_NULL, null=True)
   title = models.CharField(max_length=50)
   description = models.TextField()
   thumbnail = models.ImageField(upload_to="products/%Y/%m")

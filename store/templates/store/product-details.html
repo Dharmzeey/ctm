@@ -5,11 +5,11 @@
 {% endblock %}
 
 {% block content %}
-<h1>
+<h1 class="text-2xl">
   {{ product }}
 </h1>
 <div>
-  <div class="img-wrapper pb-4"><img src="{{ product.thumbnail.url }}" alt="{{ product.title }}"></div>
+  <div class="img-wrapper pb-4"><img class="md:w-1/2 m-auto" src="{{ product.thumbnail.url }}" alt="{{ product.title }}"></div>
   <div>
     <div class="flex gap-3 flex-wrap">
       {% for i in product.product_image.all %}
@@ -18,14 +18,14 @@
     </div>
   </div>
 </div>
-<div>
-  <small>&#8358; {{ product.price }}</small>
+<div class="py-2">
+  <div class="font-bold">&#8358; {{ product.price }}</div>
 </div>
-<div>
+<div class="pb-2">
   <a class="link" href="{% url 'store:detail_store' store_name=product.store.store_name %}">{{ product.store.store_name }}</a>
 </div>
-<div>Description</div>
-<div class="text-justify text-xs tracking-wide md:text-sm">{{ product.description }}</div>
+<div class="font-bold">Description</div>
+<div class="text-justify pb-2 text-xs tracking-wide md:text-sm">{{ product.description }}</div>
 
 <div>
   <a id="make-purchase" class="link" href="">Purchase Item</a>
@@ -54,7 +54,7 @@
       <form>
         <div class="">
           <label for="quantity">Quantity:</label>
-          <input type="number" value="1" min=1 class="" id="quantity">
+          <input type="number" value="1" min="1" step="1" class="" id="quantity">
         </div>
         <div>
           Total: &#8358; <span id="total">{{ product.price }}</span>
@@ -68,7 +68,8 @@
 {% if more_items %}
 <br>
 <h1 class="font-bold">Explore This Store</h1>
-<div class="flex flex-wrap gap-2">
+<div class="grid-items pt-4">
+  <!-- grid-template-columns: repeat(auto-fill, minmax(200px, 1fr) ) ; -->
   {% for good in more_items %}
   <div>
     <a href="{% url 'store:detail_product' store_name=good.store.store_name product_uuid=good.uuid %}">
@@ -87,7 +88,7 @@
 
 {% if recently_viewed %}
 <h1 class="font-bold">Recently Viewed Items</h1>
-<div class="flex flex-wrap gap-2">
+<div class="grid-items pt-4">
   {% for good in recently_viewed %}
   <div>
     <a href="{% url 'store:detail_product' store_name=good.store.store_name product_uuid=good.uuid %}">
@@ -113,7 +114,8 @@
   $(document).ready(function () {
     // THIS WILL HANDLE THE MATHS OF ONINPUT
     $("#quantity").on('input', function () {
-      let total = $("#quantity").val() * parseInt('{{ product.price }}');
+      let total = parseInt($("#quantity").val()) * parseInt('{{ product.price }}');
+      $("#quantity").val(parseInt($("#quantity").val()))
       $("#total").html(total);
     })
     // Redirect to the vendor's WhatsApp page when the "Purchase" button is clicked
@@ -138,54 +140,9 @@
     $(".close").click(function () {
       $("#pop-up").addClass("scale-0");
     });
+
+
   });
-
-
-  /**  let productId = '{{ product.uuid }}';
-    let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
-    if (recentlyViewed.indexOf(productId) === -1) {
-      recentlyViewed.push(productId);
-    }
-    localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
   
-    $(document).ready(function () {
-      // Get the CSRF token from the input of type hidden
-      var csrftoken = $("input[name='csrfmiddlewaretoken']").val();
-      let pageUrl = "{% url 'store:recently_viewed' %}";
-      console.log(pageUrl);
-      let data = JSON.parse(localStorage.getItem('recentlyViewed'));
-      $.ajax({
-        url: pageUrl,
-        type: 'POST',
-        data: { "viewed-recently": data, csrfmiddlewaretoken: csrftoken, },
-        success: () => {
-          console.log("success")
-        },
-        error: () => {
-          console.log("error")
-        }
-      })
-    })
-    **/
-
-  /** function getRecentlyViewed() {
-    const recentlyViewed = localStorage.getItem('recentlyViewed');
-    return recentlyViewed ? JSON.parse(recentlyViewed) : [];
-  }
-  function sendRecentlyViewed(recentlyViewed) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/store/recently-viewed/', true);
-    xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        console.log('Recently viewed items sent successfully!');
-      } else {
-        console.error('Error sending recently viewed items!');
-      }
-    };
-    xhr.send(JSON.stringify(recentlyViewed));
-  }
-  // sendRecentlyViewed(getRecentlyViewed)
-  **/
 </script>
 {% endblock %}

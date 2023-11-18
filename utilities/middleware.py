@@ -20,9 +20,7 @@ class VendorStoreMiddleware(MiddlewareMixin):
         request.user.selling_vendor.store_owner
       except:
         # THIS WILL CHECK IF THE REQUEST IS AJAX THAT FILTERS LOCATION OF STORE AND THEN EXCLUDE
-        if request.path == reverse_lazy('store:load_data'):
-          return None
-        elif request.path == reverse_lazy('account_login'):
+        if request.path == reverse_lazy('account_login'):
           return None
         elif request.path != reverse_lazy('store:create_store'):
           messages.info(request, "Please Update your store profile")
